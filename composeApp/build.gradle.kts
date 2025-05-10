@@ -22,6 +22,7 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
+            implementation("io.github.oshai:kotlin-logging-jvm:7.0.7")
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)

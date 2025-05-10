@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    kotlin("plugin.lombok") version "2.1.20"
+    id("io.freefair.lombok") version "8.13"
 }
 
 kotlin {

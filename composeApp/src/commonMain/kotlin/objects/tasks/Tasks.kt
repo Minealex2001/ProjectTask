@@ -1,4 +1,4 @@
-﻿package objects
+﻿package objects.tasks
 
 class Tasks {
     var tasks: MutableList<Task> = mutableListOf()

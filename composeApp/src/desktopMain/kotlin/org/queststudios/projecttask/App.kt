@@ -46,6 +46,7 @@ import org.queststudios.projecttask.storage.loadTasksEncrypted
 import org.queststudios.projecttask.AddTaskScreen
 import org.queststudios.projecttask.addTask
 import org.queststudios.projecttask.TaskCard
+import androidx.compose.ui.window.Dialog
 
 @Composable
 @Preview
@@ -66,53 +67,14 @@ fun App() {
             if (maximized) {
                 Box(Modifier.fillMaxSize()) {
                     // Popup para agregar tarea
+                    // Display AddTaskScreen as a Dialog overlay
                     if (showContent) {
-                        Box(
-                            Modifier
-                                .fillMaxSize()
-                                .background(M3Theme.colorScheme.scrim.copy(alpha = 0.32f))
-                        ) {}
-                        Box(
-                            Modifier
-                                .align(Alignment.Center)
-                                .background(M3Theme.colorScheme.surface, shape = M3Theme.shapes.medium)
-                                .padding(32.dp)
-                        ) {
-                            AddTaskScreen(
-                                taskName = taskName,
-                                onTaskNameChange = { taskName = it },
-                                taskDescription = taskDescription,
-                                onTaskDescriptionChange = { taskDescription = it },
-                                taskTime = taskTime,
-                                onTaskTimeChange = { taskTime = it },
-                                showTimePicker = showTimePicker,
-                                onShowTimePickerChange = { showTimePicker = it },
-                                onAddTask = {
-                                    val updated = addTask(tasks, taskName, taskDescription, if (taskTime.isNotBlank()) taskTime else null)
-                                    if (updated.size > tasks.size) {
-                                        tasks = updated.toMutableList()
-                                        taskName = ""
-                                        taskDescription = ""
-                                        taskTime = ""
-                                        showContent = false
-                                    }
-                                },
-                                onCancel = { showContent = false }
-                            )
-                        }
-                    }
-                    // Lista de tareas con scroll y padding inferior para no tapar los botones flotantes
-                    Box(
-                        Modifier
-                            .fillMaxSize()
-                            .align(Alignment.TopStart)
-                            .padding(bottom = 120.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                        ) {
-                            AnimatedVisibility(showContent) {
+                        Dialog(onDismissRequest = { showContent = false }) {
+                            Surface(
+                                shape = M3Theme.shapes.medium,
+                                color = M3Theme.colorScheme.surface,
+                                tonalElevation = 8.dp
+                            ) {
                                 AddTaskScreen(
                                     taskName = taskName,
                                     onTaskNameChange = { taskName = it },
@@ -129,11 +91,25 @@ fun App() {
                                             taskName = ""
                                             taskDescription = ""
                                             taskTime = ""
+                                            showContent = false
                                         }
                                     },
                                     onCancel = { showContent = false }
                                 )
                             }
+                        }
+                    }
+                    // Lista de tareas con scroll y padding inferior para no tapar los botones flotantes
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .align(Alignment.TopStart)
+                            .padding(bottom = 120.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                        ) {
                         }
                         if (tasks.isNotEmpty()) {
                             val scrollState = rememberScrollState()
@@ -181,6 +157,13 @@ fun App() {
                                         }
                                     )
                                 }
+                            }
+                        } else {
+                            Box(
+                                Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(Strings.get("task.empty_motivation"), style = M3Theme.typography.titleMedium, color = M3Theme.colorScheme.primary)
                             }
                         }
                     }

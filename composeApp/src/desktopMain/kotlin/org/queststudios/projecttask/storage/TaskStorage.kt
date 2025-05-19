@@ -38,13 +38,13 @@ fun saveTasksEncrypted(tasks: List<Task>, password: String = getPasswordFromSett
     val userHome = System.getProperty("user.home")
     val dir = Paths.get(userHome, "Documents", "ProjectTask").toFile()
     if (!dir.exists()) dir.mkdirs()
-    val file = File(dir, "tasks.json.enc")
+    val file = File(dir, "tasks.taskbackup")
     file.writeText(base64)
 }
 
 fun loadTasksEncrypted(password: String = getPasswordFromSettings()): List<Task> {
     val userHome = System.getProperty("user.home")
-    val file = Paths.get(userHome, "Documents", "ProjectTask", "tasks.json.enc").toFile()
+    val file = Paths.get(userHome, "Documents", "ProjectTask", "tasks.taskbackup").toFile()
     if (!file.exists()) return emptyList()
     val base64 = file.readText()
     val encrypted = Base64.getDecoder().decode(base64)

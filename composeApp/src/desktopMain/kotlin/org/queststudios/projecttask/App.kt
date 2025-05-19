@@ -106,7 +106,7 @@ fun App() {
                                     },
                                     onCancel = {
                                         showContent = false
-                                        taskNote = ""                  // clear note on cancel
+                                        // taskNote is no longer cleared on cancel to preserve notes until save
                                     }
                                 )
                             }

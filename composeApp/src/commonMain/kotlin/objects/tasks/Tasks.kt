@@ -1,5 +1,8 @@
 ﻿package objects.tasks
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 class Tasks {
     var tasks: MutableList<Task> = mutableListOf()
 

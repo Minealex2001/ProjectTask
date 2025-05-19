@@ -1,33 +1,26 @@
 ﻿package objects.tasks
 
+import kotlinx.serialization.Serializable
 import objects.notes.Note
-import java.sql.Time
-import java.util.*
 
-class Task {
-    var name: String
-    var description: String
-    var isCompleted: Boolean = false
-    lateinit var date: Date
-    lateinit var time: Time
-    var notes: MutableList<Note> = mutableListOf()
-    var estimatedTime: Time? = null
-
-    var isProgramed: Boolean = false
-
-    lateinit var currentTime: Time
-
-    constructor(name: String, description: String) {
-        this.name = name
-        this.description = description
-    }
-
+@Serializable
+data class Task(
+    var name: String = "",
+    var description: String = "",
+    var isCompleted: Boolean = false,
+    var date: String = "", // ISO 8601 string (yyyy-MM-dd)
+    var time: String = "", // HH:mm:ss
+    var notes: List<Note> = emptyList(),
+    var estimatedTime: String? = null, // HH:mm:ss
+    var isProgramed: Boolean = false,
+    var currentTime: String = "" // HH:mm:ss
+) {
     fun addNote(note: Note) {
-        notes.add(note)
+        notes += note
     }
 
     fun removeNote(note: Note) {
-        notes.remove(note)
+        notes -= note
     }
 
     fun getNote(index: Int): Note {
@@ -42,69 +35,68 @@ class Task {
         isCompleted = false
     }
 
-    fun addEstimatedTime(time: Time): Boolean {
-        try {
+    fun addEstimatedTime(time: String): Boolean {
+        return try {
             estimatedTime = time
-            return true
+            true
         } catch (e: Exception) {
-            return false
+            false
         }
     }
 
-    fun removeEstimatedTime(time: Time): Boolean {
-        try {
+    fun removeEstimatedTime(): Boolean {
+        return try {
             estimatedTime = null
-            return true
+            true
         } catch (e: Exception) {
-            return false
+            false
         }
     }
 
-    fun addCurrentTime(time: Time): Boolean {
-        try {
+    fun addCurrentTime(time: String): Boolean {
+        return try {
             currentTime = time
-            return true
+            true
         } catch (e: Exception) {
-            return false
+            false
         }
     }
 
-    fun addDate(date: Date): Boolean {
-        try {
+    fun addDate(date: String): Boolean {
+        return try {
             this.date = date
-            return true
+            true
         } catch (e: Exception) {
-            return false
+            false
         }
     }
 
-    fun addTime(time: Time): Boolean {
-        try {
+    fun addTime(time: String): Boolean {
+        return try {
             this.time = time
-            return true
+            true
         } catch (e: Exception) {
-            return false
+            false
         }
     }
 
-    fun removeDate(date: Date): Boolean {
-        try {
-            this.date = date
-            return true
+    fun removeDate(): Boolean {
+        return try {
+            this.date = ""
+            true
         } catch (e: Exception) {
-            return false
+            false
         }
     }
 
-    fun removeTime(time: Time): Boolean {
-        try {
-            this.time = time
-            return true
+    fun removeTime(): Boolean {
+        return try {
+            this.time = ""
+            true
         } catch (e: Exception) {
-            return false
+            false
         }
     }
-
 
 //    fun checkIfIsProgramed(): Boolean{
 //

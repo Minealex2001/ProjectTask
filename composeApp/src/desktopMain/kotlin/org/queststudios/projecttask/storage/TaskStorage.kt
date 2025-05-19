@@ -11,9 +11,18 @@ import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 import kotlinx.serialization.builtins.ListSerializer
 
-const val TASKS_PASSWORD = "projecttask2024"
+fun getPasswordFromSettings(): String {
+    val userHome = System.getProperty("user.home")
+    val dir = Paths.get(userHome, "Documents", "ProjectTask").toFile()
+    val settingsFile = File(dir, "settings.json")
+    if (!settingsFile.exists()) return "projecttask2024" // valor por defecto
+    val json = settingsFile.readText()
+    val regex = "\\"password\\"\\s*:\\s*\\"(.*?)\\"".toRegex()
+    val match = regex.find(json)
+    return match?.groups?.get(1)?.value ?: "projecttask2024"
+}
 
-fun saveTasksEncrypted(tasks: List<Task>, password: String = TASKS_PASSWORD) {
+fun saveTasksEncrypted(tasks: List<Task>, password: String = getPasswordFromSettings()) {
     val json = Json.encodeToString(ListSerializer(Task.serializer()), tasks)
     val key = password.padEnd(16, '0').substring(0, 16).toByteArray()
     val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
@@ -28,7 +37,7 @@ fun saveTasksEncrypted(tasks: List<Task>, password: String = TASKS_PASSWORD) {
     file.writeText(base64)
 }
 
-fun loadTasksEncrypted(password: String = TASKS_PASSWORD): List<Task> {
+fun loadTasksEncrypted(password: String = getPasswordFromSettings()): List<Task> {
     val userHome = System.getProperty("user.home")
     val file = Paths.get(userHome, "Documents", "ProjectTask", "tasks.json.enc").toFile()
     if (!file.exists()) return emptyList()

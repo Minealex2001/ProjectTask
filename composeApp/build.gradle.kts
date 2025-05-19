@@ -34,15 +34,18 @@ kotlin {
     }
 }
 
-
 compose.desktop {
     application {
         mainClass = "org.queststudios.projecttask.MainKt"
 
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "org.queststudios.projecttask"
+            targetFormats(TargetFormat.Exe, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Dmg)
+            packageName = "ProjectTask"
             packageVersion = "1.0.0"
+            windows {
+                // Optional: configure Windows installer
+                menuGroup = "ProjectTask"
+            }
         }
     }
 }

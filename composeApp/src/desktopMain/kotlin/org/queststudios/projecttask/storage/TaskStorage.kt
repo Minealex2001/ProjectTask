@@ -10,6 +10,8 @@ import java.util.Base64
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 fun getPasswordFromSettings(): String {
     val userHome = System.getProperty("user.home")
@@ -17,9 +19,12 @@ fun getPasswordFromSettings(): String {
     val settingsFile = File(dir, "settings.json")
     if (!settingsFile.exists()) return "projecttask2024" // valor por defecto
     val json = settingsFile.readText()
-    val regex = "\\"password\\"\\s*:\\s*\\"(.*?)\\"".toRegex()
-    val match = regex.find(json)
-    return match?.groups?.get(1)?.value ?: "projecttask2024"
+    // Usa kotlinx.serialization para mayor robustez
+    return try {
+        kotlinx.serialization.json.Json.parseToJsonElement(json).jsonObject["password"]?.jsonPrimitive?.content ?: "projecttask2024"
+    } catch (e: Exception) {
+        "projecttask2024"
+    }
 }
 
 fun saveTasksEncrypted(tasks: List<Task>, password: String = getPasswordFromSettings()) {

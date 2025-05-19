@@ -42,7 +42,6 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import org.queststudios.projecttask.localization.Strings
 import org.queststudios.projecttask.storage.saveTasksEncrypted
 import org.queststudios.projecttask.storage.loadTasksEncrypted
-import org.queststudios.projecttask.storage.TASKS_PASSWORD
 
 @Composable
 @Preview

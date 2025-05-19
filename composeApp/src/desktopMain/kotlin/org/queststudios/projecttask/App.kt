@@ -12,13 +12,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import objects.tasks.Task
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import java.sql.Date
-import java.sql.Time
 
 @Composable
 @Preview
 fun App() {
-    var tasks by remember { mutableStateOf(mutableListOf<Task>()) }
+    val tasks: MutableList<Task> = mutableListOf()
     MaterialTheme {
         var showContent by remember { mutableStateOf(false) }
         Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -41,8 +39,6 @@ fun App() {
                             Task(
                                 "New Task",
                                 "Test",
-                                Date.valueOf("2025-07-25"),
-                                Time.valueOf("15:00:00")
                             )
                         )
                     }) {

@@ -8,8 +8,8 @@ class Task {
     var name: String
     var description: String
     var isCompleted: Boolean = false
-    var date: Date
-    var time: Time
+    lateinit var date: Date
+    lateinit var time: Time
     var notes: MutableList<Note> = mutableListOf()
     var estimatedTime: Time? = null
 
@@ -17,11 +17,9 @@ class Task {
 
     lateinit var currentTime: Time
 
-    constructor(name: String, description: String, date: Date, time: Time) {
+    constructor(name: String, description: String) {
         this.name = name
         this.description = description
-        this.date = date
-        this.time = time
     }
 
     fun addNote(note: Note) {
@@ -70,6 +68,43 @@ class Task {
             return false
         }
     }
+
+    fun addDate(date: Date): Boolean {
+        try {
+            this.date = date
+            return true
+        } catch (e: Exception) {
+            return false
+        }
+    }
+
+    fun addTime(time: Time): Boolean {
+        try {
+            this.time = time
+            return true
+        } catch (e: Exception) {
+            return false
+        }
+    }
+
+    fun removeDate(date: Date): Boolean {
+        try {
+            this.date = date
+            return true
+        } catch (e: Exception) {
+            return false
+        }
+    }
+
+    fun removeTime(time: Time): Boolean {
+        try {
+            this.time = time
+            return true
+        } catch (e: Exception) {
+            return false
+        }
+    }
+
 
 //    fun checkIfIsProgramed(): Boolean{
 //

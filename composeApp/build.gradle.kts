@@ -45,6 +45,8 @@ compose.desktop {
             windows {
                 // Optional: configure Windows installer
                 menuGroup = "ProjectTask"
+                dirChooser = true
+                shortcut = true
             }
         }
     }

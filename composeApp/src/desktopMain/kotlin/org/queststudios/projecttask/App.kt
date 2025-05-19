@@ -45,6 +45,7 @@ import org.queststudios.projecttask.storage.saveTasksEncrypted
 import org.queststudios.projecttask.storage.loadTasksEncrypted
 import org.queststudios.projecttask.AddTaskScreen
 import org.queststudios.projecttask.addTask
+import org.queststudios.projecttask.TaskCard
 
 @Composable
 @Preview
@@ -144,89 +145,41 @@ fun App() {
                                 Text(Strings.get("task.added"), style = M3Theme.typography.titleLarge, color = M3Theme.colorScheme.primary)
                                 Spacer(Modifier.height(8.dp))
                                 tasks.forEachIndexed { index, task ->
-                                    ElevatedCard(
-                                        shape = M3Theme.shapes.medium,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(bottom = 12.dp),
-                                        colors = CardDefaults.elevatedCardColors(
-                                            containerColor = if (task.isCompleted) M3Theme.colorScheme.surfaceVariant else M3Theme.colorScheme.surface
-                                        )
-                                    ) {
-                                        Column(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(16.dp)
-                                        ) {
-                                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                                Column(modifier = Modifier.weight(1f)) {
-                                                    Text(task.name, style = M3Theme.typography.titleMedium, color = M3Theme.colorScheme.onSurface)
-                                                    Text(task.description, style = M3Theme.typography.bodyMedium, color = M3Theme.colorScheme.onSurfaceVariant)
-                                                    Text(Strings.get("task.estimated_time", task.estimatedTime ?: Strings.get("task.not_assigned")), style = M3Theme.typography.labelMedium, color = M3Theme.colorScheme.secondary)
-                                                }
-                                                Spacer(Modifier.width(8.dp))
-                                                if (editingIndex != index) {
-                                                    FilledTonalButton(onClick = {
-                                                        editingIndex = index
-                                                        editingTime = task.estimatedTime?.toString() ?: ""
-                                                    }) { Text(Strings.get("button.edit_time")) }
-                                                }
-                                            }
-                                            if (editingIndex == index) {
-                                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                                    OutlinedTextField(
-                                                        value = editingTime,
-                                                        onValueChange = {},
-                                                        label = { Text(Strings.get("button.edit_time")) },
-                                                        enabled = false,
-                                                        modifier = Modifier.weight(1f)
-                                                    )
-                                                    Spacer(Modifier.width(8.dp))
-                                                    FilledTonalButton(onClick = {
-                                                        showEditTimePicker = true
-                                                        editTimePickerIndex = index
-                                                    }) { Text(Strings.get("button.select_time")) }
-                                                }
-                                                if (showEditTimePicker && editTimePickerIndex == index) {
-                                                    Box(Modifier.fillMaxSize()) {
-                                                        Box(
-                                                            Modifier
-                                                                .fillMaxSize()
-                                                                .background(M3Theme.colorScheme.scrim.copy(alpha = 0.32f))
-                                                        ) {}
-                                                        Box(
-                                                            Modifier
-                                                                .align(Alignment.Center)
-                                                                .background(M3Theme.colorScheme.surface, shape = M3Theme.shapes.medium)
-                                                                .padding(24.dp)
-                                                        ) {
-                                                            TimePickerContent(
-                                                                initialTime = editingTime.ifBlank { "00:00:00" },
-                                                                onTimeSelected = {
-                                                                    editingTime = it
-                                                                    showEditTimePicker = false
-                                                                },
-                                                                onDismiss = { showEditTimePicker = false }
-                                                            )
-                                                        }
-                                                    }
-                                                }
-                                                Row {
-                                                    ElevatedButton(onClick = {
-                                                        val updatedTasks = tasks.toMutableList()
-                                                        updatedTasks[index].estimatedTime = editingTime
-                                                        tasks = updatedTasks
-                                                        editingIndex = -1
-                                                        editingTime = ""
-                                                    }) { Text(Strings.get("button.save")) }
-                                                    OutlinedButton(onClick = {
-                                                        editingIndex = -1
-                                                        editingTime = ""
-                                                    }) { Text(Strings.get("button.cancel")) }
-                                                }
-                                            }
+                                    TaskCard(
+                                        task = task,
+                                        onTaskUpdate = { updatedTask ->
+                                            val updatedTasks = tasks.toMutableList()
+                                            updatedTasks[index] = updatedTask
+                                            tasks = updatedTasks
+                                        },
+                                        onNoteAdd = { noteText ->
+                                            val updatedTasks = tasks.toMutableList()
+                                            val updatedNotes = updatedTasks[index].notes.toMutableList()
+                                            updatedNotes.add(objects.notes.Note(noteText))
+                                            updatedTasks[index] = updatedTasks[index].copy(notes = updatedNotes)
+                                            tasks = updatedTasks
+                                        },
+                                        onNoteEdit = { noteIndex, newText ->
+                                            val updatedTasks = tasks.toMutableList()
+                                            val updatedNotes = updatedTasks[index].notes.toMutableList()
+                                            updatedNotes[noteIndex] = updatedNotes[noteIndex].copy(text = newText)
+                                            updatedTasks[index] = updatedTasks[index].copy(notes = updatedNotes)
+                                            tasks = updatedTasks
+                                        },
+                                        onNoteDelete = { noteIndex ->
+                                            val updatedTasks = tasks.toMutableList()
+                                            val updatedNotes = updatedTasks[index].notes.toMutableList()
+                                            updatedNotes.removeAt(noteIndex)
+                                            updatedTasks[index] = updatedTasks[index].copy(notes = updatedNotes)
+                                            tasks = updatedTasks
+                                        },
+                                        estimatedTime = task.estimatedTime,
+                                        onEstimatedTimeChange = { newTime ->
+                                            val updatedTasks = tasks.toMutableList()
+                                            updatedTasks[index] = updatedTasks[index].copy(estimatedTime = newTime)
+                                            tasks = updatedTasks
                                         }
-                                    }
+                                    )
                                 }
                             }
                         }

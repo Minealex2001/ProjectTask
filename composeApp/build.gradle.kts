@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     kotlin("plugin.lombok") version "2.1.20"
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.22"
 }
 
 kotlin {
@@ -23,6 +24,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
             implementation("io.github.oshai:kotlin-logging-jvm:7.0.7")
+            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
         }
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)

@@ -1,5 +1,8 @@
 ﻿package objects.notes
 
-class Note {
-    lateinit var text: String
-}
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class Note(
+    var text: String = ""
+)

@@ -40,12 +40,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import org.queststudios.projecttask.localization.Strings
+import org.queststudios.projecttask.storage.saveTasksEncrypted
+import org.queststudios.projecttask.storage.loadTasksEncrypted
+import org.queststudios.projecttask.storage.TASKS_PASSWORD
 
 @Composable
 @Preview
 fun App() {
-    val password = "projecttask2024"
-    var tasks by remember { mutableStateOf(loadTasksEncrypted(password).toMutableList()) }
+    var tasks by remember { mutableStateOf(loadTasksEncrypted().toMutableList()) }
     var maximized by remember { mutableStateOf(false) }
     var showContent by remember { mutableStateOf(false) }
     var taskName by remember { mutableStateOf("") }
@@ -351,7 +353,7 @@ fun App() {
     }
     DisposableEffect(Unit) {
         onDispose {
-            saveTasksEncrypted(tasks, password)
+            saveTasksEncrypted(tasks)
         }
     }
 }
@@ -416,35 +418,4 @@ fun DropdownSelector(label: String, value: Int, range: IntRange, onValueChange: 
             }
         }
     }
-}
-
-fun saveTasksEncrypted(tasks: List<Task>, password: String) {
-    val json = Json.encodeToString(ListSerializer(Task.serializer()), tasks)
-    // Encriptar el JSON
-    val key = password.padEnd(16, '0').substring(0, 16).toByteArray()
-    val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
-    val secretKey = SecretKeySpec(key, "AES")
-    cipher.init(Cipher.ENCRYPT_MODE, secretKey)
-    val encrypted = cipher.doFinal(json.toByteArray(Charsets.UTF_8))
-    val base64 = Base64.getEncoder().encodeToString(encrypted)
-    // Guardar en Documentos/ProjectTask/tasks.json.enc
-    val userHome = System.getProperty("user.home")
-    val dir = Paths.get(userHome, "Documents", "ProjectTask").toFile()
-    if (!dir.exists()) dir.mkdirs()
-    val file = File(dir, "tasks.json.enc")
-    file.writeText(base64)
-}
-
-fun loadTasksEncrypted(password: String): List<Task> {
-    val userHome = System.getProperty("user.home")
-    val file = Paths.get(userHome, "Documents", "ProjectTask", "tasks.json.enc").toFile()
-    if (!file.exists()) return emptyList()
-    val base64 = file.readText()
-    val encrypted = Base64.getDecoder().decode(base64)
-    val key = password.padEnd(16, '0').substring(0, 16).toByteArray()
-    val cipher = Cipher.getInstance("AES/ECB/PKCS5Padding")
-    val secretKey = SecretKeySpec(key, "AES")
-    cipher.init(Cipher.DECRYPT_MODE, secretKey)
-    val json = cipher.doFinal(encrypted).toString(Charsets.UTF_8)
-    return Json.decodeFromString(ListSerializer(Task.serializer()), json)
 }

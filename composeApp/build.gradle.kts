@@ -37,9 +37,7 @@ kotlin {
 compose.desktop {
     application {
         mainClass = "org.queststudios.projecttask.MainKt"
-        // Optional: configure the application icon
-        iconFile.set(project.file("src/desktopMain/resources/icon.png"))        
-
+        // Set the application icon (place icon.png in composeApp/src/desktopMain/resources)
         nativeDistributions {
             targetFormats(TargetFormat.Exe, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Dmg)
             packageName = "ProjectTask"

@@ -39,6 +39,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import org.queststudios.projecttask.localization.Strings
 
 @Composable
 @Preview
@@ -78,26 +79,26 @@ fun App() {
                             OutlinedTextField(
                                 value = taskName,
                                 onValueChange = { taskName = it },
-                                label = { Text("Nombre de la tarea") },
+                                label = { Text(Strings.get("task.name")) },
                                 modifier = Modifier.fillMaxWidth()
                             )
                             OutlinedTextField(
                                 value = taskDescription,
                                 onValueChange = { taskDescription = it },
-                                label = { Text("Descripción") },
+                                label = { Text(Strings.get("task.description")) },
                                 modifier = Modifier.fillMaxWidth()
                             )
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 OutlinedTextField(
                                     value = taskTime,
                                     onValueChange = {},
-                                    label = { Text("Tiempo estimado (HH:mm:ss)") },
+                                    label = { Text(Strings.get("task.estimated_time_label")) },
                                     enabled = false,
                                     modifier = Modifier.weight(1f)
                                 )
                                 Spacer(Modifier.width(8.dp))
                                 Button(onClick = { showTimePicker = true }) {
-                                    Text("Seleccionar tiempo")
+                                    Text(Strings.get("button.select_time"))
                                 }
                             }
                             if (showTimePicker) {
@@ -125,7 +126,7 @@ fun App() {
                                 }
                             }
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                                Button(onClick = { showContent = false }) { Text("Cancelar") }
+                                Button(onClick = { showContent = false }) { Text(Strings.get("button.cancel")) }
                                 Spacer(Modifier.width(8.dp))
                                 Button(onClick = {
                                     if (taskName.isNotBlank() && taskDescription.isNotBlank()) {
@@ -141,7 +142,7 @@ fun App() {
                                         showContent = false
                                     }
                                 }) {
-                                    Text("Agregar")
+                                    Text(Strings.get("button.add"))
                                 }
                             }
                         }
@@ -166,26 +167,26 @@ fun App() {
                                 OutlinedTextField(
                                     value = taskName,
                                     onValueChange = { taskName = it },
-                                    label = { Text("Nombre de la tarea") },
+                                    label = { Text(Strings.get("task.name")) },
                                     modifier = Modifier.fillMaxWidth()
                                 )
                                 OutlinedTextField(
                                     value = taskDescription,
                                     onValueChange = { taskDescription = it },
-                                    label = { Text("Descripción") },
+                                    label = { Text(Strings.get("task.description")) },
                                     modifier = Modifier.fillMaxWidth()
                                 )
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     OutlinedTextField(
                                         value = taskTime,
                                         onValueChange = {},
-                                        label = { Text("Tiempo estimado (HH:mm:ss)") },
+                                        label = { Text(Strings.get("task.estimated_time_label")) },
                                         enabled = false,
                                         modifier = Modifier.weight(1f)
                                     )
                                     Spacer(Modifier.width(8.dp))
                                     Button(onClick = { showTimePicker = true }) {
-                                        Text("Seleccionar tiempo")
+                                        Text(Strings.get("button.select_time"))
                                     }
                                 }
                                 if (showTimePicker) {
@@ -225,7 +226,7 @@ fun App() {
                                         taskTime = ""
                                     }
                                 }) {
-                                    Text("Agregar")
+                                    Text(Strings.get("button.add"))
                                 }
                             }
                         }
@@ -237,7 +238,7 @@ fun App() {
                                 .fillMaxSize()
                                 .verticalScroll(scrollState)
                         ) {
-                            Text("Tareas agregadas:", style = MaterialTheme.typography.h6)
+                            Text(Strings.get("task.added"), style = MaterialTheme.typography.h6)
                             Spacer(Modifier.height(8.dp))
                             tasks.forEachIndexed { index, task ->
                                 Card(
@@ -260,14 +261,14 @@ fun App() {
                                             Column(modifier = Modifier.weight(1f)) {
                                                 Text(task.name, style = MaterialTheme.typography.subtitle1)
                                                 Text(task.description, style = MaterialTheme.typography.body2)
-                                                Text("Tiempo estimado: ${task.estimatedTime ?: "No asignado"}", style = MaterialTheme.typography.caption)
+                                                Text(Strings.get("task.estimated_time", task.estimatedTime ?: Strings.get("task.not_assigned")), style = MaterialTheme.typography.caption)
                                             }
                                             Spacer(Modifier.width(8.dp))
                                             if (editingIndex != index) {
                                                 Button(onClick = {
                                                     editingIndex = index
                                                     editingTime = task.estimatedTime?.toString() ?: ""
-                                                }) { Text("Editar tiempo") }
+                                                }) { Text(Strings.get("button.edit_time")) }
                                             }
                                         }
                                         if (editingIndex == index) {
@@ -275,7 +276,7 @@ fun App() {
                                                 OutlinedTextField(
                                                     value = editingTime,
                                                     onValueChange = {},
-                                                    label = { Text("Editar tiempo (HH:mm:ss)") },
+                                                    label = { Text(Strings.get("button.edit_time")) },
                                                     enabled = false,
                                                     modifier = Modifier.weight(1f)
                                                 )
@@ -283,7 +284,7 @@ fun App() {
                                                 Button(onClick = {
                                                     showEditTimePicker = true
                                                     editTimePickerIndex = index
-                                                }) { Text("Seleccionar tiempo") }
+                                                }) { Text(Strings.get("button.select_time")) }
                                             }
                                             if (showEditTimePicker && editTimePickerIndex == index) {
                                                 Box(Modifier.fillMaxSize()) {
@@ -316,11 +317,11 @@ fun App() {
                                                     tasks = updatedTasks
                                                     editingIndex = -1
                                                     editingTime = ""
-                                                }) { Text("Guardar") }
+                                                }) { Text(Strings.get("button.save")) }
                                                 Button(onClick = {
                                                     editingIndex = -1
                                                     editingTime = ""
-                                                }) { Text("Cancelar") }
+                                                }) { Text(Strings.get("button.cancel")) }
                                             }
                                         }
                                     }
@@ -334,14 +335,14 @@ fun App() {
                     onClick = { maximized = false },
                     modifier = Modifier.align(Alignment.BottomEnd).padding(24.dp)
                 ) {
-                    Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Minimizar")
+                    Icon(Icons.Default.KeyboardArrowDown, contentDescription = Strings.get("button.minimize"))
                 }
                 // Botón flotante para agregar tarea (abajo a la derecha, encima del de minimizar)
                 FloatingActionButton(
                     onClick = { showContent = !showContent },
                     modifier = Modifier.align(Alignment.BottomEnd).padding(end = 24.dp, bottom = 88.dp)
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "Agregar tarea")
+                    Icon(Icons.Default.Add, contentDescription = Strings.get("button.add"))
                 }
             }
         } else {
@@ -365,24 +366,24 @@ fun TimePickerContent(
     var minute by remember { mutableStateOf(initialTime.split(":").getOrNull(1)?.toIntOrNull() ?: 0) }
     var second by remember { mutableStateOf(initialTime.split(":").getOrNull(2)?.toIntOrNull() ?: 0) }
     Column(Modifier.padding(16.dp)) {
-        Text("Selecciona el tiempo", style = MaterialTheme.typography.h6)
+        Text(Strings.get("timepicker.title"), style = MaterialTheme.typography.h6)
         Row(verticalAlignment = Alignment.CenterVertically) {
             DropdownSelector(
-                label = "Hora",
+                label = Strings.get("timepicker.hour"),
                 value = hour,
                 range = 0..23,
                 onValueChange = { hour = it }
             )
             Spacer(Modifier.width(8.dp))
             DropdownSelector(
-                label = "Minuto",
+                label = Strings.get("timepicker.minute"),
                 value = minute,
                 range = 0..59,
                 onValueChange = { minute = it }
             )
             Spacer(Modifier.width(8.dp))
             DropdownSelector(
-                label = "Segundo",
+                label = Strings.get("timepicker.second"),
                 value = second,
                 range = 0..59,
                 onValueChange = { second = it }
@@ -392,9 +393,9 @@ fun TimePickerContent(
             Button(onClick = {
                 val timeStr = String.format("%02d:%02d:%02d", hour, minute, second)
                 onTimeSelected(timeStr)
-            }) { Text("Aceptar") }
+            }) { Text(Strings.get("button.save")) }
             Spacer(Modifier.width(8.dp))
-            Button(onClick = onDismiss) { Text("Cancelar") }
+            Button(onClick = onDismiss) { Text(Strings.get("button.cancel")) }
         }
     }
 }

@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerMoveFilter
 import androidx.compose.ui.unit.dp
 import objects.tasks.Task
+import org.queststudios.projecttask.localization.Strings
 
 @OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
 @Composable
@@ -27,10 +28,10 @@ fun TaskTrackerFloating(
                 modifier = Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.Start
             ) {
-                Text("Tareas activas", style = MaterialTheme.typography.h6)
+                Text(Strings.get("task.active"), style = MaterialTheme.typography.h6)
                 Spacer(Modifier.height(8.dp))
                 if (tasks.isEmpty()) {
-                    Text("No tienes tareas pendientes", style = MaterialTheme.typography.body1)
+                    Text(Strings.get("task.no_pending"), style = MaterialTheme.typography.body1)
                 } else {
                     val pendingTasks = tasks.filter { !it.isCompleted }
                     val nextTask = pendingTasks
@@ -38,7 +39,7 @@ fun TaskTrackerFloating(
                         .minByOrNull { it.estimatedTime ?: "99:99:99" }
                     var showDetails by remember { mutableStateOf(false) }
                     if (nextTask != null) {
-                        Text("Próxima tarea:", style = MaterialTheme.typography.body1)
+                        Text(Strings.get("task.next"), style = MaterialTheme.typography.body1)
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
@@ -78,7 +79,7 @@ fun TaskTrackerFloating(
                                             }
                                             if (nextTask.notes.isNotEmpty()) {
                                                 Spacer(Modifier.height(4.dp))
-                                                Text("Notas:", style = MaterialTheme.typography.body2)
+                                                Text(Strings.get("task.notes"), style = MaterialTheme.typography.body2)
                                                 nextTask.notes.forEach { note ->
                                                     Text("- ${note.text}", style = MaterialTheme.typography.body2, modifier = Modifier.padding(start = 8.dp))
                                                 }
@@ -89,17 +90,17 @@ fun TaskTrackerFloating(
                             }
                             Spacer(Modifier.width(8.dp))
                         }
-                        Text("Tiempo estimado: ${nextTask.estimatedTime}", style = MaterialTheme.typography.body2)
+                        Text(Strings.get("task.estimated_time", nextTask.estimatedTime), style = MaterialTheme.typography.body2)
                     } else {
-                        Text("No hay tareas con tiempo estimado", style = MaterialTheme.typography.body2)
+                        Text(Strings.get("task.no_estimated"), style = MaterialTheme.typography.body2)
                     }
                     Spacer(Modifier.height(12.dp))
-                    Text("Total pendientes: ${pendingTasks.size}", style = MaterialTheme.typography.body1)
+                    Text(Strings.get("task.total_pending", pendingTasks.size), style = MaterialTheme.typography.body1)
                 }
                 Spacer(Modifier.height(12.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                     Button(onClick = onMaximize) {
-                        Text("Maximizar")
+                        Text(Strings.get("button.maximize"))
                     }
                 }
             }

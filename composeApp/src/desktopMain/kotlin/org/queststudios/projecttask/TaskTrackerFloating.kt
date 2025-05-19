@@ -1,7 +1,8 @@
 package org.queststudios.projecttask
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme as M3Theme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,8 +18,9 @@ fun TaskTrackerFloating(
     onMaximize: () -> Unit
 ) {
     Surface(
-        elevation = 8.dp,
-        shape = MaterialTheme.shapes.medium,
+        tonalElevation = 8.dp,
+        shape = M3Theme.shapes.medium,
+        color = M3Theme.colorScheme.surface,
         modifier = Modifier
             .widthIn(min = 340.dp, max = 600.dp)
             .padding(12.dp)
@@ -28,10 +30,10 @@ fun TaskTrackerFloating(
                 modifier = Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.Start
             ) {
-                Text(Strings.get("task.active"), style = MaterialTheme.typography.h6)
+                Text(Strings.get("task.active"), style = M3Theme.typography.titleLarge, color = M3Theme.colorScheme.primary)
                 Spacer(Modifier.height(8.dp))
                 if (tasks.isEmpty()) {
-                    Text(Strings.get("task.no_pending"), style = MaterialTheme.typography.body1)
+                    Text(Strings.get("task.no_pending"), style = M3Theme.typography.bodyLarge, color = M3Theme.colorScheme.onSurface)
                 } else {
                     val pendingTasks = tasks.filter { !it.isCompleted }
                     val nextTask = pendingTasks
@@ -39,7 +41,7 @@ fun TaskTrackerFloating(
                         .minByOrNull { it.estimatedTime ?: "99:99:99" }
                     var showDetails by remember { mutableStateOf(false) }
                     if (nextTask != null) {
-                        Text(Strings.get("task.next"), style = MaterialTheme.typography.body1)
+                        Text(Strings.get("task.next"), style = M3Theme.typography.titleMedium, color = M3Theme.colorScheme.secondary)
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
@@ -63,25 +65,25 @@ fun TaskTrackerFloating(
                                 }
                         ) {
                             Box {
-                                Text(nextTask.name, style = MaterialTheme.typography.body1)
+                                Text(nextTask.name, style = M3Theme.typography.bodyLarge, color = M3Theme.colorScheme.onSurface)
                                 if (showDetails) {
                                     Surface(
-                                        elevation = 8.dp,
-                                        shape = MaterialTheme.shapes.small,
-                                        color = MaterialTheme.colors.surface.copy(alpha = 0.98f),
+                                        tonalElevation = 8.dp,
+                                        shape = M3Theme.shapes.small,
+                                        color = M3Theme.colorScheme.surfaceVariant,
                                         modifier = Modifier
                                             .padding(top = 28.dp, start = 0.dp)
                                             .widthIn(min = 220.dp, max = 400.dp)
                                     ) {
                                         Column(modifier = Modifier.padding(12.dp)) {
                                             if (nextTask.description.isNotBlank()) {
-                                                Text(nextTask.description, style = MaterialTheme.typography.body2)
+                                                Text(nextTask.description, style = M3Theme.typography.bodyMedium)
                                             }
                                             if (nextTask.notes.isNotEmpty()) {
                                                 Spacer(Modifier.height(4.dp))
-                                                Text(Strings.get("task.notes"), style = MaterialTheme.typography.body2)
+                                                Text(Strings.get("task.notes"), style = M3Theme.typography.labelLarge)
                                                 nextTask.notes.forEach { note ->
-                                                    Text("- ${note.text}", style = MaterialTheme.typography.body2, modifier = Modifier.padding(start = 8.dp))
+                                                    Text("- ${note.text}", style = M3Theme.typography.bodySmall, modifier = Modifier.padding(start = 8.dp))
                                                 }
                                             }
                                         }
@@ -90,16 +92,16 @@ fun TaskTrackerFloating(
                             }
                             Spacer(Modifier.width(8.dp))
                         }
-                        Text(Strings.get("task.estimated_time", nextTask.estimatedTime), style = MaterialTheme.typography.body2)
+                        Text(Strings.get("task.estimated_time", nextTask.estimatedTime), style = M3Theme.typography.bodyMedium, color = M3Theme.colorScheme.secondary)
                     } else {
-                        Text(Strings.get("task.no_estimated"), style = MaterialTheme.typography.body2)
+                        Text(Strings.get("task.no_estimated"), style = M3Theme.typography.bodyMedium, color = M3Theme.colorScheme.outline)
                     }
                     Spacer(Modifier.height(12.dp))
-                    Text(Strings.get("task.total_pending", pendingTasks.size), style = MaterialTheme.typography.body1)
+                    Text(Strings.get("task.total_pending", pendingTasks.size), style = M3Theme.typography.bodyLarge, color = M3Theme.colorScheme.primary)
                 }
                 Spacer(Modifier.height(12.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    Button(onClick = onMaximize) {
+                    ElevatedButton(onClick = onMaximize) {
                         Text(Strings.get("button.maximize"))
                     }
                 }

@@ -2,7 +2,8 @@ package org.queststudios.projecttask
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme as M3Theme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,6 +30,7 @@ fun addTask(
     return tasks + newTask
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTaskScreen(
     taskName: String,
@@ -44,30 +46,43 @@ fun AddTaskScreen(
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.widthIn(min = 320.dp, max = 420.dp)
+        modifier = Modifier.widthIn(min = 340.dp, max = 480.dp).padding(16.dp)
     ) {
         OutlinedTextField(
             value = taskName,
             onValueChange = onTaskNameChange,
-            label = { Text(Strings.get("task.name")) },
-            modifier = Modifier.fillMaxWidth()
+            label = { Text(Strings.get("task.name"), style = M3Theme.typography.labelLarge) },
+            modifier = Modifier.fillMaxWidth(),
+            shape = M3Theme.shapes.medium,
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = M3Theme.colorScheme.primary,
+                unfocusedBorderColor = M3Theme.colorScheme.outline
+            )
         )
+        Spacer(Modifier.height(12.dp))
         OutlinedTextField(
             value = taskDescription,
             onValueChange = onTaskDescriptionChange,
-            label = { Text(Strings.get("task.description")) },
-            modifier = Modifier.fillMaxWidth()
+            label = { Text(Strings.get("task.description"), style = M3Theme.typography.labelLarge) },
+            modifier = Modifier.fillMaxWidth(),
+            shape = M3Theme.shapes.medium,
+            colors = TextFieldDefaults.outlinedTextFieldColors(
+                focusedBorderColor = M3Theme.colorScheme.primary,
+                unfocusedBorderColor = M3Theme.colorScheme.outline
+            )
         )
+        Spacer(Modifier.height(12.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             OutlinedTextField(
                 value = taskTime,
                 onValueChange = {},
-                label = { Text(Strings.get("task.estimated_time")) },
+                label = { Text(Strings.get("task.estimated_time"), style = M3Theme.typography.labelLarge) },
                 enabled = false,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                shape = M3Theme.shapes.medium
             )
             Spacer(Modifier.width(8.dp))
-            Button(onClick = { onShowTimePickerChange(true) }) {
+            ElevatedButton(onClick = { onShowTimePickerChange(true) }) {
                 Text(Strings.get("button.select_time"))
             }
         }
@@ -76,12 +91,12 @@ fun AddTaskScreen(
                 Box(
                     Modifier
                         .fillMaxSize()
-                        .background(Color.Black.copy(alpha = 0.32f))
+                        .background(M3Theme.colorScheme.scrim.copy(alpha = 0.32f))
                 ) {}
                 Box(
                     Modifier
                         .align(Alignment.Center)
-                        .background(Color.White, shape = MaterialTheme.shapes.medium)
+                        .background(M3Theme.colorScheme.surface, shape = M3Theme.shapes.medium)
                         .padding(24.dp)
                 ) {
                     org.queststudios.projecttask.TimePickerContent(
@@ -95,10 +110,11 @@ fun AddTaskScreen(
                 }
             }
         }
+        Spacer(Modifier.height(16.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            Button(onClick = onCancel) { Text(Strings.get("button.cancel")) }
+            OutlinedButton(onClick = onCancel) { Text(Strings.get("button.cancel")) }
             Spacer(Modifier.width(8.dp))
-            Button(onClick = onAddTask) { Text(Strings.get("button.add")) }
+            ElevatedButton(onClick = onAddTask) { Text(Strings.get("button.add")) }
         }
     }
 }

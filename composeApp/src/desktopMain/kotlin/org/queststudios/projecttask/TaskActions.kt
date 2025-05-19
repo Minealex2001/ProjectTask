@@ -10,23 +10,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import objects.tasks.Task
+import objects.notes.Note
 import org.queststudios.projecttask.localization.Strings
 import androidx.compose.ui.window.Dialog
 
 /**
  * Agrega una nueva tarea a la lista existente y retorna la lista actualizada.
  */
+// Expand addTask to accept initial note
 fun addTask(
     tasks: List<Task>,
     name: String,
     description: String,
-    estimatedTime: String?
+    estimatedTime: String?,
+    noteText: String?
 ): List<Task> {
-    if (name.isBlank() || description.isBlank()) return tasks
+    if (name.isBlank()) return tasks  // Description optional
+    val notesList = noteText?.takeIf { it.isNotBlank() }?.let { listOf(Note(it)) } ?: emptyList()
     val newTask = Task(
         name = name,
         description = description,
-        estimatedTime = estimatedTime?.takeIf { it.isNotBlank() }
+        estimatedTime = estimatedTime?.takeIf { it.isNotBlank() },
+        notes = notesList
     )
     return tasks + newTask
 }
@@ -40,11 +45,14 @@ fun AddTaskScreen(
     onTaskDescriptionChange: (String) -> Unit,
     taskTime: String,
     onTaskTimeChange: (String) -> Unit,
+    taskNote: String,
+    onTaskNoteChange: (String) -> Unit,
     showTimePicker: Boolean,
     onShowTimePickerChange: (Boolean) -> Unit,
     onAddTask: () -> Unit,
     onCancel: () -> Unit
 ) {
+    var showError by remember { mutableStateOf(false) }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -58,25 +66,32 @@ fun AddTaskScreen(
         ) {
             OutlinedTextField(
                 value = taskName,
-                onValueChange = onTaskNameChange,
-                label = { Text(Strings.get("task.name"), style = M3Theme.typography.labelLarge) },
-                modifier = Modifier.fillMaxWidth(),
-                shape = M3Theme.shapes.medium,
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = M3Theme.colorScheme.primary,
-                    unfocusedBorderColor = M3Theme.colorScheme.outline
-                )
+                onValueChange = {
+                    onTaskNameChange(it)
+                    if (showError && it.isNotBlank()) showError = false
+                },
+                label = { Text(Strings.get("task.name")) },
+                isError = showError,
+                modifier = Modifier.fillMaxWidth()
             )
+            if (showError) {
+                Text(
+                    text = Strings.get("error.title_required"),
+                    color = M3Theme.colorScheme.error,
+                    style = M3Theme.typography.bodySmall
+                )
+            }
             OutlinedTextField(
                 value = taskDescription,
                 onValueChange = onTaskDescriptionChange,
-                label = { Text(Strings.get("task.description"), style = M3Theme.typography.labelLarge) },
-                modifier = Modifier.fillMaxWidth(),
-                shape = M3Theme.shapes.medium,
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = M3Theme.colorScheme.primary,
-                    unfocusedBorderColor = M3Theme.colorScheme.outline
-                )
+                label = { Text(Strings.get("task.description")) },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = taskNote,
+                onValueChange = onTaskNoteChange,
+                label = { Text(Strings.get("task.new_note")) },
+                modifier = Modifier.fillMaxWidth()
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -144,7 +159,15 @@ fun AddTaskScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 OutlinedButton(onClick = onCancel) { Text(Strings.get("button.cancel")) }
-                ElevatedButton(onClick = onAddTask) { Text(Strings.get("button.add")) }
+                ElevatedButton(onClick = {
+                    if (taskName.isBlank()) {
+                        showError = true
+                    } else {
+                        onAddTask()
+                    }
+                }) {
+                    Text(Strings.get("button.add"))
+                }
             }
         }
     }

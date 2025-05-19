@@ -57,6 +57,7 @@ fun App() {
     var taskName by remember { mutableStateOf("") }
     var taskDescription by remember { mutableStateOf("") }
     var taskTime by remember { mutableStateOf("") }
+    var taskNote by remember { mutableStateOf("") }    // Add note state
     var editingIndex by remember { mutableStateOf(-1) }
     var editingTime by remember { mutableStateOf("") }
     var showTimePicker by remember { mutableStateOf(false) }
@@ -82,19 +83,31 @@ fun App() {
                                     onTaskDescriptionChange = { taskDescription = it },
                                     taskTime = taskTime,
                                     onTaskTimeChange = { taskTime = it },
+                                    taskNote = taskNote,                       // pass note
+                                    onTaskNoteChange = { taskNote = it },      // update note
                                     showTimePicker = showTimePicker,
                                     onShowTimePickerChange = { showTimePicker = it },
                                     onAddTask = {
-                                        val updated = addTask(tasks, taskName, taskDescription, if (taskTime.isNotBlank()) taskTime else null)
+                                        val updated = addTask(
+                                            tasks,
+                                            taskName,
+                                            taskDescription,
+                                            if (taskTime.isNotBlank()) taskTime else null,
+                                            taskNote                              // pass note
+                                        )
                                         if (updated.size > tasks.size) {
                                             tasks = updated.toMutableList()
                                             taskName = ""
                                             taskDescription = ""
                                             taskTime = ""
+                                            taskNote = ""                  // clear note
                                             showContent = false
                                         }
                                     },
-                                    onCancel = { showContent = false }
+                                    onCancel = {
+                                        showContent = false
+                                        taskNote = ""                  // clear note on cancel
+                                    }
                                 )
                             }
                         }

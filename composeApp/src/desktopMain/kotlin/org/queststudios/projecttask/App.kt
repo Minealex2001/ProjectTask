@@ -42,6 +42,8 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import org.queststudios.projecttask.localization.Strings
 import org.queststudios.projecttask.storage.saveTasksEncrypted
 import org.queststudios.projecttask.storage.loadTasksEncrypted
+import org.queststudios.projecttask.AddTaskScreen
+import org.queststudios.projecttask.addTask
 
 @Composable
 @Preview
@@ -73,80 +75,27 @@ fun App() {
                             .background(Color.White, shape = MaterialTheme.shapes.medium)
                             .padding(32.dp)
                     ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.widthIn(min = 320.dp, max = 420.dp)
-                        ) {
-                            OutlinedTextField(
-                                value = taskName,
-                                onValueChange = { taskName = it },
-                                label = { Text(Strings.get("task.name")) },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            OutlinedTextField(
-                                value = taskDescription,
-                                onValueChange = { taskDescription = it },
-                                label = { Text(Strings.get("task.description")) },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                OutlinedTextField(
-                                    value = taskTime,
-                                    onValueChange = {},
-                                    label = { Text(Strings.get("task.estimated_time_label")) },
-                                    enabled = false,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                Spacer(Modifier.width(8.dp))
-                                Button(onClick = { showTimePicker = true }) {
-                                    Text(Strings.get("button.select_time"))
+                        AddTaskScreen(
+                            taskName = taskName,
+                            onTaskNameChange = { taskName = it },
+                            taskDescription = taskDescription,
+                            onTaskDescriptionChange = { taskDescription = it },
+                            taskTime = taskTime,
+                            onTaskTimeChange = { taskTime = it },
+                            showTimePicker = showTimePicker,
+                            onShowTimePickerChange = { showTimePicker = it },
+                            onAddTask = {
+                                val updated = addTask(tasks, taskName, taskDescription, if (taskTime.isNotBlank()) taskTime else null)
+                                if (updated.size > tasks.size) {
+                                    tasks = updated.toMutableList()
+                                    taskName = ""
+                                    taskDescription = ""
+                                    taskTime = ""
+                                    showContent = false
                                 }
-                            }
-                            if (showTimePicker) {
-                                Box(Modifier.fillMaxSize()) {
-                                    Box(
-                                        Modifier
-                                            .fillMaxSize()
-                                            .background(Color.Black.copy(alpha = 0.32f))
-                                    ) {}
-                                    Box(
-                                        Modifier
-                                            .align(Alignment.Center)
-                                            .background(Color.White, shape = MaterialTheme.shapes.medium)
-                                            .padding(24.dp)
-                                    ) {
-                                        TimePickerContent(
-                                            initialTime = taskTime.ifBlank { "00:00:00" },
-                                            onTimeSelected = {
-                                                taskTime = it
-                                                showTimePicker = false
-                                            },
-                                            onDismiss = { showTimePicker = false }
-                                        )
-                                    }
-                                }
-                            }
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                                Button(onClick = { showContent = false }) { Text(Strings.get("button.cancel")) }
-                                Spacer(Modifier.width(8.dp))
-                                Button(onClick = {
-                                    if (taskName.isNotBlank() && taskDescription.isNotBlank()) {
-                                        val newTask = Task(
-                                            name = taskName,
-                                            description = taskDescription,
-                                            estimatedTime = if (taskTime.isNotBlank()) taskTime else null
-                                        )
-                                        tasks = tasks.toMutableList().apply { add(newTask) }
-                                        taskName = ""
-                                        taskDescription = ""
-                                        taskTime = ""
-                                        showContent = false
-                                    }
-                                }) {
-                                    Text(Strings.get("button.add"))
-                                }
-                            }
-                        }
+                            },
+                            onCancel = { showContent = false }
+                        )
                     }
                 }
                 // Lista de tareas con scroll y padding inferior para no tapar los botones flotantes
@@ -161,75 +110,26 @@ fun App() {
                             .fillMaxSize()
                     ) {
                         AnimatedVisibility(showContent) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                OutlinedTextField(
-                                    value = taskName,
-                                    onValueChange = { taskName = it },
-                                    label = { Text(Strings.get("task.name")) },
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                                OutlinedTextField(
-                                    value = taskDescription,
-                                    onValueChange = { taskDescription = it },
-                                    label = { Text(Strings.get("task.description")) },
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    OutlinedTextField(
-                                        value = taskTime,
-                                        onValueChange = {},
-                                        label = { Text(Strings.get("task.estimated_time_label")) },
-                                        enabled = false,
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    Spacer(Modifier.width(8.dp))
-                                    Button(onClick = { showTimePicker = true }) {
-                                        Text(Strings.get("button.select_time"))
-                                    }
-                                }
-                                if (showTimePicker) {
-                                    Box(Modifier.fillMaxSize()) {
-                                        Box(
-                                            Modifier
-                                                .fillMaxSize()
-                                                .background(Color.Black.copy(alpha = 0.32f))
-                                        ) {}
-                                        Box(
-                                            Modifier
-                                                .align(Alignment.Center)
-                                                .background(Color.White, shape = MaterialTheme.shapes.medium)
-                                                .padding(24.dp)
-                                        ) {
-                                            TimePickerContent(
-                                                initialTime = taskTime.ifBlank { "00:00:00" },
-                                                onTimeSelected = {
-                                                    taskTime = it
-                                                    showTimePicker = false
-                                                },
-                                                onDismiss = { showTimePicker = false }
-                                            )
-                                        }
-                                    }
-                                }
-                                Button(onClick = {
-                                    if (taskName.isNotBlank() && taskDescription.isNotBlank()) {
-                                        val newTask = Task(
-                                            name = taskName,
-                                            description = taskDescription,
-                                            estimatedTime = if (taskTime.isNotBlank()) taskTime else null
-                                        )
-                                        tasks = tasks.toMutableList().apply { add(newTask) }
+                            AddTaskScreen(
+                                taskName = taskName,
+                                onTaskNameChange = { taskName = it },
+                                taskDescription = taskDescription,
+                                onTaskDescriptionChange = { taskDescription = it },
+                                taskTime = taskTime,
+                                onTaskTimeChange = { taskTime = it },
+                                showTimePicker = showTimePicker,
+                                onShowTimePickerChange = { showTimePicker = it },
+                                onAddTask = {
+                                    val updated = addTask(tasks, taskName, taskDescription, if (taskTime.isNotBlank()) taskTime else null)
+                                    if (updated.size > tasks.size) {
+                                        tasks = updated.toMutableList()
                                         taskName = ""
                                         taskDescription = ""
                                         taskTime = ""
                                     }
-                                }) {
-                                    Text(Strings.get("button.add"))
-                                }
-                            }
+                                },
+                                onCancel = { showContent = false }
+                            )
                         }
                     }
                     if (tasks.isNotEmpty()) {

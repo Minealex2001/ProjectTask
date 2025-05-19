@@ -32,6 +32,13 @@ import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import org.queststudios.projecttask.TaskTrackerFloating
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 
 @Composable
 @Preview
@@ -50,150 +57,291 @@ fun App() {
     var editTimePickerIndex by remember { mutableStateOf(-1) }
     MaterialTheme {
         if (maximized) {
-            Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                Button(onClick = { maximized = false }) { Text("Minimizar") }
-                Button(onClick = { showContent = !showContent }) {
-                    Text(if (showContent) "Ocultar formulario" else "Agregar Tarea")
-                }
-                AnimatedVisibility(showContent) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.fillMaxWidth()
+            Box(Modifier.fillMaxSize()) {
+                // Popup para agregar tarea
+                if (showContent) {
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.32f))
+                    ) {}
+                    Box(
+                        Modifier
+                            .align(Alignment.Center)
+                            .background(Color.White, shape = MaterialTheme.shapes.medium)
+                            .padding(32.dp)
                     ) {
-                        OutlinedTextField(
-                            value = taskName,
-                            onValueChange = { taskName = it },
-                            label = { Text("Nombre de la tarea") },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        OutlinedTextField(
-                            value = taskDescription,
-                            onValueChange = { taskDescription = it },
-                            label = { Text("Descripción") },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.widthIn(min = 320.dp, max = 420.dp)
+                        ) {
                             OutlinedTextField(
-                                value = taskTime,
-                                onValueChange = {},
-                                label = { Text("Tiempo estimado (HH:mm:ss)") },
-                                enabled = false,
-                                modifier = Modifier.weight(1f)
+                                value = taskName,
+                                onValueChange = { taskName = it },
+                                label = { Text("Nombre de la tarea") },
+                                modifier = Modifier.fillMaxWidth()
                             )
-                            Spacer(Modifier.width(8.dp))
-                            Button(onClick = { showTimePicker = true }) {
-                                Text("Seleccionar tiempo")
+                            OutlinedTextField(
+                                value = taskDescription,
+                                onValueChange = { taskDescription = it },
+                                label = { Text("Descripción") },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                OutlinedTextField(
+                                    value = taskTime,
+                                    onValueChange = {},
+                                    label = { Text("Tiempo estimado (HH:mm:ss)") },
+                                    enabled = false,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Spacer(Modifier.width(8.dp))
+                                Button(onClick = { showTimePicker = true }) {
+                                    Text("Seleccionar tiempo")
+                                }
                             }
-                        }
-                        if (showTimePicker) {
-                            Box(Modifier.fillMaxSize()) {
-                                Box(
-                                    Modifier
-                                        .fillMaxSize()
-                                        .background(Color.Black.copy(alpha = 0.32f))
-                                ) {}
-                                Box(
-                                    Modifier
-                                        .align(Alignment.Center)
-                                        .background(Color.White, shape = MaterialTheme.shapes.medium)
-                                        .padding(24.dp)
-                                ) {
-                                    TimePickerContent(
-                                        initialTime = taskTime.ifBlank { "00:00:00" },
-                                        onTimeSelected = {
-                                            taskTime = it
-                                            showTimePicker = false
-                                        },
-                                        onDismiss = { showTimePicker = false }
-                                    )
+                            if (showTimePicker) {
+                                Box(Modifier.fillMaxSize()) {
+                                    Box(
+                                        Modifier
+                                            .fillMaxSize()
+                                            .background(Color.Black.copy(alpha = 0.32f))
+                                    ) {}
+                                    Box(
+                                        Modifier
+                                            .align(Alignment.Center)
+                                            .background(Color.White, shape = MaterialTheme.shapes.medium)
+                                            .padding(24.dp)
+                                    ) {
+                                        TimePickerContent(
+                                            initialTime = taskTime.ifBlank { "00:00:00" },
+                                            onTimeSelected = {
+                                                taskTime = it
+                                                showTimePicker = false
+                                            },
+                                            onDismiss = { showTimePicker = false }
+                                        )
+                                    }
+                                }
+                            }
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                                Button(onClick = { showContent = false }) { Text("Cancelar") }
+                                Spacer(Modifier.width(8.dp))
+                                Button(onClick = {
+                                    if (taskName.isNotBlank() && taskDescription.isNotBlank()) {
+                                        val newTask = Task(
+                                            name = taskName,
+                                            description = taskDescription,
+                                            estimatedTime = if (taskTime.isNotBlank()) taskTime else null
+                                        )
+                                        tasks = tasks.toMutableList().apply { add(newTask) }
+                                        taskName = ""
+                                        taskDescription = ""
+                                        taskTime = ""
+                                        showContent = false
+                                    }
+                                }) {
+                                    Text("Agregar")
                                 }
                             }
                         }
-                        Button(onClick = {
-                            if (taskName.isNotBlank() && taskDescription.isNotBlank()) {
-                                val newTask = Task(
-                                    name = taskName,
-                                    description = taskDescription,
-                                    estimatedTime = if (taskTime.isNotBlank()) taskTime else null
-                                )
-                                tasks = tasks.toMutableList().apply { add(newTask) }
-                                taskName = ""
-                                taskDescription = ""
-                                taskTime = ""
-                            }
-                        }) {
-                            Text("Agregar")
-                        }
                     }
                 }
-                if (tasks.isNotEmpty()) {
-                    Column(modifier = Modifier.fillMaxWidth()) {
-                        Text("Tareas agregadas:", style = MaterialTheme.typography.h6)
-                        tasks.forEachIndexed { index, task ->
-                            Column {
-                                Text("- ${task.name}: ${task.description}")
-                                Text("  Tiempo estimado: ${task.estimatedTime ?: "No asignado"}")
-                                if (editingIndex == index) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        OutlinedTextField(
-                                            value = editingTime,
-                                            onValueChange = {},
-                                            label = { Text("Editar tiempo (HH:mm:ss)") },
-                                            enabled = false,
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                        Spacer(Modifier.width(8.dp))
-                                        Button(onClick = {
-                                            showEditTimePicker = true
-                                            editTimePickerIndex = index
-                                        }) { Text("Seleccionar tiempo") }
+                // Lista de tareas con scroll y padding inferior para no tapar los botones flotantes
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .align(Alignment.TopStart)
+                        .padding(bottom = 120.dp) // deja espacio para los FABs
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                    ) {
+                        AnimatedVisibility(showContent) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                OutlinedTextField(
+                                    value = taskName,
+                                    onValueChange = { taskName = it },
+                                    label = { Text("Nombre de la tarea") },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                                OutlinedTextField(
+                                    value = taskDescription,
+                                    onValueChange = { taskDescription = it },
+                                    label = { Text("Descripción") },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    OutlinedTextField(
+                                        value = taskTime,
+                                        onValueChange = {},
+                                        label = { Text("Tiempo estimado (HH:mm:ss)") },
+                                        enabled = false,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Button(onClick = { showTimePicker = true }) {
+                                        Text("Seleccionar tiempo")
                                     }
-                                    if (showEditTimePicker && editTimePickerIndex == index) {
-                                        Box(Modifier.fillMaxSize()) {
-                                            Box(
-                                                Modifier
-                                                    .fillMaxSize()
-                                                    .background(Color.Black.copy(alpha = 0.32f))
-                                            ) {}
-                                            Box(
-                                                Modifier
-                                                    .align(Alignment.Center)
-                                                    .background(Color.White, shape = MaterialTheme.shapes.medium)
-                                                    .padding(24.dp)
-                                            ) {
-                                                TimePickerContent(
-                                                    initialTime = editingTime.ifBlank { "00:00:00" },
-                                                    onTimeSelected = {
-                                                        editingTime = it
-                                                        showEditTimePicker = false
-                                                    },
-                                                    onDismiss = { showEditTimePicker = false }
+                                }
+                                if (showTimePicker) {
+                                    Box(Modifier.fillMaxSize()) {
+                                        Box(
+                                            Modifier
+                                                .fillMaxSize()
+                                                .background(Color.Black.copy(alpha = 0.32f))
+                                        ) {}
+                                        Box(
+                                            Modifier
+                                                .align(Alignment.Center)
+                                                .background(Color.White, shape = MaterialTheme.shapes.medium)
+                                                .padding(24.dp)
+                                        ) {
+                                            TimePickerContent(
+                                                initialTime = taskTime.ifBlank { "00:00:00" },
+                                                onTimeSelected = {
+                                                    taskTime = it
+                                                    showTimePicker = false
+                                                },
+                                                onDismiss = { showTimePicker = false }
+                                            )
+                                        }
+                                    }
+                                }
+                                Button(onClick = {
+                                    if (taskName.isNotBlank() && taskDescription.isNotBlank()) {
+                                        val newTask = Task(
+                                            name = taskName,
+                                            description = taskDescription,
+                                            estimatedTime = if (taskTime.isNotBlank()) taskTime else null
+                                        )
+                                        tasks = tasks.toMutableList().apply { add(newTask) }
+                                        taskName = ""
+                                        taskDescription = ""
+                                        taskTime = ""
+                                    }
+                                }) {
+                                    Text("Agregar")
+                                }
+                            }
+                        }
+                    }
+                    if (tasks.isNotEmpty()) {
+                        val scrollState = rememberScrollState()
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(scrollState)
+                        ) {
+                            Text("Tareas agregadas:", style = MaterialTheme.typography.h6)
+                            Spacer(Modifier.height(8.dp))
+                            tasks.forEachIndexed { index, task ->
+                                Card(
+                                    shape = MaterialTheme.shapes.medium,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(bottom = 8.dp)
+                                ) {
+                                    // Fondo personalizado según estado
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth() // Asegura que el contenido de la tarjeta ocupe todo el ancho
+                                            .background(
+                                                if (task.isCompleted) MaterialTheme.colors.onSurface.copy(alpha = 0.08f)
+                                                else MaterialTheme.colors.surface
+                                            )
+                                            .padding(12.dp)
+                                    ) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Column(modifier = Modifier.weight(1f)) {
+                                                Text(task.name, style = MaterialTheme.typography.subtitle1)
+                                                Text(task.description, style = MaterialTheme.typography.body2)
+                                                Text("Tiempo estimado: ${task.estimatedTime ?: "No asignado"}", style = MaterialTheme.typography.caption)
+                                            }
+                                            Spacer(Modifier.width(8.dp))
+                                            if (editingIndex != index) {
+                                                Button(onClick = {
+                                                    editingIndex = index
+                                                    editingTime = task.estimatedTime?.toString() ?: ""
+                                                }) { Text("Editar tiempo") }
+                                            }
+                                        }
+                                        if (editingIndex == index) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                OutlinedTextField(
+                                                    value = editingTime,
+                                                    onValueChange = {},
+                                                    label = { Text("Editar tiempo (HH:mm:ss)") },
+                                                    enabled = false,
+                                                    modifier = Modifier.weight(1f)
                                                 )
+                                                Spacer(Modifier.width(8.dp))
+                                                Button(onClick = {
+                                                    showEditTimePicker = true
+                                                    editTimePickerIndex = index
+                                                }) { Text("Seleccionar tiempo") }
+                                            }
+                                            if (showEditTimePicker && editTimePickerIndex == index) {
+                                                Box(Modifier.fillMaxSize()) {
+                                                    Box(
+                                                        Modifier
+                                                            .fillMaxSize()
+                                                            .background(Color.Black.copy(alpha = 0.32f))
+                                                    ) {}
+                                                    Box(
+                                                        Modifier
+                                                            .align(Alignment.Center)
+                                                            .background(Color.White, shape = MaterialTheme.shapes.medium)
+                                                            .padding(24.dp)
+                                                    ) {
+                                                        TimePickerContent(
+                                                            initialTime = editingTime.ifBlank { "00:00:00" },
+                                                            onTimeSelected = {
+                                                                editingTime = it
+                                                                showEditTimePicker = false
+                                                            },
+                                                            onDismiss = { showEditTimePicker = false }
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                            Row {
+                                                Button(onClick = {
+                                                    val updatedTasks = tasks.toMutableList()
+                                                    updatedTasks[index].estimatedTime = editingTime
+                                                    tasks = updatedTasks
+                                                    editingIndex = -1
+                                                    editingTime = ""
+                                                }) { Text("Guardar") }
+                                                Button(onClick = {
+                                                    editingIndex = -1
+                                                    editingTime = ""
+                                                }) { Text("Cancelar") }
                                             }
                                         }
                                     }
-                                    Row {
-                                        Button(onClick = {
-                                            val updatedTasks = tasks.toMutableList()
-                                            updatedTasks[index].estimatedTime = editingTime
-                                            tasks = updatedTasks
-                                            editingIndex = -1
-                                            editingTime = ""
-                                        }) { Text("Guardar") }
-                                        Button(onClick = {
-                                            editingIndex = -1
-                                            editingTime = ""
-                                        }) { Text("Cancelar") }
-                                    }
-                                } else {
-                                    Button(onClick = {
-                                        editingIndex = index
-                                        editingTime = task.estimatedTime?.toString() ?: ""
-                                    }) { Text("Editar tiempo") }
                                 }
                             }
                         }
                     }
+                }
+                // Botón flotante para minimizar (abajo a la derecha)
+                FloatingActionButton(
+                    onClick = { maximized = false },
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(24.dp)
+                ) {
+                    Icon(Icons.Default.KeyboardArrowDown, contentDescription = "Minimizar")
+                }
+                // Botón flotante para agregar tarea (abajo a la derecha, encima del de minimizar)
+                FloatingActionButton(
+                    onClick = { showContent = !showContent },
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(end = 24.dp, bottom = 88.dp)
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Agregar tarea")
                 }
             }
         } else {

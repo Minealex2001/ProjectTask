@@ -63,7 +63,7 @@ fun App() {
     var showTimePicker by remember { mutableStateOf(false) }
     var showEditTimePicker by remember { mutableStateOf(false) }
     var editTimePickerIndex by remember { mutableStateOf(-1) }
-    M3Theme(colorScheme = darkColorScheme()) {
+    M3Theme(colorScheme = darkColorScheme(), typography = Typography(), shapes = Shapes()) {
         Surface(modifier = Modifier.fillMaxSize(), color = M3Theme.colorScheme.background) {
             if (maximized) {
                 Box(Modifier.fillMaxSize()) {
@@ -166,6 +166,11 @@ fun App() {
                                         onEstimatedTimeChange = { newTime ->
                                             val updatedTasks = tasks.toMutableList()
                                             updatedTasks[index] = updatedTasks[index].copy(estimatedTime = newTime)
+                                            tasks = updatedTasks
+                                        },
+                                        onDeleteTask = {
+                                            val updatedTasks = tasks.toMutableList()
+                                            updatedTasks.removeAt(index)
                                             tasks = updatedTasks
                                         }
                                     )

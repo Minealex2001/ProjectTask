@@ -3,6 +3,7 @@ package org.queststudios.projecttask
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.material3.MaterialTheme as M3Theme
@@ -31,7 +32,8 @@ fun TaskCard(
     onNoteEdit: (Int, String) -> Unit,
     onNoteDelete: (Int) -> Unit,
     estimatedTime: String?,
-    onEstimatedTimeChange: (String) -> Unit
+    onEstimatedTimeChange: (String) -> Unit,
+    onDeleteTask: () -> Unit // Nuevo parámetro para borrar tarea
 ) {
     var isEditing by remember { mutableStateOf(false) }
     var editedName by remember { mutableStateOf(task.name) }
@@ -43,6 +45,7 @@ fun TaskCard(
     var showEditTimePicker by remember { mutableStateOf(false) }
     var editTimePickerIndex by remember { mutableStateOf(-1) }
 
+    var showDeleteDialog by remember { mutableStateOf(false) }
     ElevatedCard(
         shape = M3Theme.shapes.medium,
         modifier = Modifier
@@ -84,23 +87,6 @@ fun TaskCard(
                     Text(Strings.get("task.estimated_time", estimatedTime ?: Strings.get("task.not_assigned")), style = M3Theme.typography.labelMedium, color = M3Theme.colorScheme.secondary)
                 }
                 Spacer(Modifier.width(8.dp))
-                AnimatedVisibility(visible = !isEditing, enter = fadeIn(), exit = fadeOut()) {
-                    FilledTonalButton(onClick = { isEditing = true }) { Text(Strings.get("button.edit"), color = M3Theme.colorScheme.onPrimary) }
-                }
-            }
-            AnimatedVisibility(visible = isEditing, enter = fadeIn(), exit = fadeOut()) {
-                Row(Modifier.padding(top = 8.dp)) {
-                    ElevatedButton(onClick = {
-                        onTaskUpdate(task.copy(name = editedName, description = editedDescription))
-                        isEditing = false
-                    }) { Text(Strings.get("button.save")) }
-                    Spacer(Modifier.width(8.dp))
-                    OutlinedButton(onClick = {
-                        editedName = task.name
-                        editedDescription = task.description
-                        isEditing = false
-                    }) { Text(Strings.get("button.cancel")) }
-                }
             }
             // Notas
             Spacer(Modifier.height(8.dp))
@@ -163,6 +149,27 @@ fun TaskCard(
                     }
                 }
             }
+            // Diálogo de confirmación para borrar tarea
+            if (showDeleteDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDeleteDialog = false },
+                    title = { Text(Strings.get("dialog.delete_task_title")) },
+                    text = { Text(Strings.get("dialog.delete_task_message")) },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            showDeleteDialog = false
+                            onDeleteTask()
+                        }) {
+                            Text(Strings.get("button.delete"))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDeleteDialog = false }) {
+                            Text(Strings.get("button.cancel"))
+                        }
+                    }
+                )
+            }
             // Edición de tiempo estimado
             Spacer(Modifier.height(8.dp))
             AnimatedVisibility(visible = isEditing, enter = fadeIn(), exit = fadeOut()) {
@@ -202,6 +209,63 @@ fun TaskCard(
                             },
                             onDismiss = { showEditTimePicker = false }
                         )
+                    }
+                }
+            }
+            // Botones de acción abajo de la tarjeta
+            Spacer(Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                val borderColor = M3Theme.colorScheme.primary
+                if (!isEditing) {
+                    OutlinedButton(
+                        onClick = { isEditing = true },
+                        border = BorderStroke(1.dp, borderColor),
+                        colors = ButtonDefaults.outlinedButtonColors()
+                    ) {
+                        Icon(Icons.Default.Edit, contentDescription = Strings.get("button.edit"))
+                        Spacer(Modifier.width(8.dp))
+                        Text(Strings.get("button.edit"))
+                    }
+                }
+                if (isEditing) {
+                    OutlinedButton(
+                        onClick = {
+                            onTaskUpdate(task.copy(name = editedName, description = editedDescription))
+                            isEditing = false
+                        },
+                        border = BorderStroke(1.dp, borderColor),
+                        colors = ButtonDefaults.outlinedButtonColors()
+                    ) {
+                        Icon(Icons.Default.Check, contentDescription = Strings.get("button.save"))
+                        Spacer(Modifier.width(8.dp))
+                        Text(Strings.get("button.save"))
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    OutlinedButton(
+                        onClick = {
+                            editedName = task.name
+                            editedDescription = task.description
+                            isEditing = false
+                        },
+                        border = BorderStroke(1.dp, borderColor),
+                        colors = ButtonDefaults.outlinedButtonColors()
+                    ) {
+                        Icon(Icons.Default.Close, contentDescription = Strings.get("button.cancel"))
+                        Spacer(Modifier.width(8.dp))
+                        Text(Strings.get("button.cancel"))
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    OutlinedButton(
+                        onClick = { showDeleteDialog = true },
+                        border = BorderStroke(1.dp, borderColor),
+                        colors = ButtonDefaults.outlinedButtonColors()
+                    ) {
+                        Icon(Icons.Default.Delete, contentDescription = Strings.get("button.delete"))
+                        Spacer(Modifier.width(8.dp))
+                        Text(Strings.get("button.delete"))
                     }
                 }
             }

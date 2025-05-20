@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import org.queststudios.projecttask.localization.Strings
 import objects.tasks.Task
 import objects.notes.Note
+import org.queststudios.projecttask.ui.AppColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -218,7 +219,7 @@ fun TaskCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                val borderColor = M3Theme.colorScheme.primary
+                val borderColor = AppColors.border
                 if (!isEditing) {
                     OutlinedButton(
                         onClick = { isEditing = true },

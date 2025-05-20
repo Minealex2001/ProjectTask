@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.background
 import androidx.compose.ui.unit.dp
 import objects.tasks.Task
+import objects.notes.Note
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.decodeFromString
@@ -40,6 +41,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import org.queststudios.projecttask.localization.Strings
 import org.queststudios.projecttask.storage.saveTasksEncrypted
 import org.queststudios.projecttask.storage.loadTasksEncrypted
@@ -47,6 +49,44 @@ import org.queststudios.projecttask.AddTaskScreen
 import org.queststudios.projecttask.addTask
 import org.queststudios.projecttask.TaskCard
 import androidx.compose.ui.window.Dialog
+import org.queststudios.projecttask.ui.CustomDarkColorScheme
+import org.queststudios.projecttask.ui.CustomLightColorScheme
+import java.nio.file.Files
+import java.nio.file.StandardOpenOption
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+
+fun getThemeFromSettings(): Boolean {
+    val configFile = File(System.getProperty("user.home"), "Documents/ProjectTask/settings.json")
+    if (configFile.exists()) {
+        try {
+            val json = Json.parseToJsonElement(configFile.readText()).jsonObject
+            val theme = json["theme"]?.jsonPrimitive?.content
+            if (theme == "dark") return true
+            if (theme == "light") return false
+        } catch (_: Exception) {}
+    }
+    return false // Por defecto claro
+}
+
+fun saveThemeToSettings(isDark: Boolean) {
+    val configFile = File(System.getProperty("user.home"), "Documents/ProjectTask/settings.json")
+    val json: kotlinx.serialization.json.JsonObject = if (configFile.exists()) {
+        try {
+            Json.parseToJsonElement(configFile.readText()).jsonObject
+        } catch (_: Exception) {
+            buildJsonObject { }
+        }
+    } else buildJsonObject { }
+    val updated = buildJsonObject {
+        json.forEach { (k, v) -> put(k, v) }
+        put("theme", if (isDark) "dark" else "light")
+    }
+    configFile.parentFile?.mkdirs()
+    configFile.writeText(Json.encodeToString(kotlinx.serialization.json.JsonObject.serializer(), updated))
+}
 
 @Composable
 @Preview
@@ -57,24 +97,38 @@ fun App() {
     var taskName by remember { mutableStateOf("") }
     var taskDescription by remember { mutableStateOf("") }
     var taskTime by remember { mutableStateOf("") }
-    var taskNote by remember { mutableStateOf("") }    // Add note state
+    var taskNote by remember { mutableStateOf("") }
     var editingIndex by remember { mutableStateOf(-1) }
     var editingTime by remember { mutableStateOf("") }
     var showTimePicker by remember { mutableStateOf(false) }
     var showEditTimePicker by remember { mutableStateOf(false) }
     var editTimePickerIndex by remember { mutableStateOf(-1) }
-    M3Theme(colorScheme = darkColorScheme(), typography = Typography(), shapes = Shapes()) {
-        Surface(modifier = Modifier.fillMaxSize(), color = M3Theme.colorScheme.background) {
+    var isDarkTheme by remember { mutableStateOf(getThemeFromSettings()) }
+
+    fun toggleTheme() {
+        isDarkTheme = !isDarkTheme
+        saveThemeToSettings(isDarkTheme)
+    }
+
+    M3Theme(
+        colorScheme = if (isDarkTheme) CustomDarkColorScheme else CustomLightColorScheme,
+        typography = Typography(),
+        shapes = Shapes()
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = M3Theme.colorScheme.background,
+            tonalElevation = 8.dp
+        ) {
             if (maximized) {
                 Box(Modifier.fillMaxSize()) {
-                    // Popup para agregar tarea
-                    // Display AddTaskScreen as a Dialog overlay
                     if (showContent) {
                         Dialog(onDismissRequest = { showContent = false }) {
                             Surface(
-                                shape = M3Theme.shapes.medium,
+                                shape = M3Theme.shapes.large,
                                 color = M3Theme.colorScheme.surface,
-                                tonalElevation = 8.dp
+                                tonalElevation = 8.dp,
+                                modifier = Modifier.padding(16.dp)
                             ) {
                                 AddTaskScreen(
                                     taskName = taskName,
@@ -83,8 +137,8 @@ fun App() {
                                     onTaskDescriptionChange = { taskDescription = it },
                                     taskTime = taskTime,
                                     onTaskTimeChange = { taskTime = it },
-                                    taskNote = taskNote,                       // pass note
-                                    onTaskNoteChange = { taskNote = it },      // update note
+                                    taskNote = taskNote,
+                                    onTaskNoteChange = { taskNote = it },
                                     showTimePicker = showTimePicker,
                                     onShowTimePickerChange = { showTimePicker = it },
                                     onAddTask = {
@@ -93,26 +147,25 @@ fun App() {
                                             taskName,
                                             taskDescription,
                                             if (taskTime.isNotBlank()) taskTime else null,
-                                            taskNote                              // pass note
+                                            taskNote
                                         )
                                         if (updated.size > tasks.size) {
                                             tasks = updated.toMutableList()
                                             taskName = ""
                                             taskDescription = ""
                                             taskTime = ""
-                                            taskNote = ""                  // clear note
+                                            taskNote = ""
                                             showContent = false
                                         }
                                     },
                                     onCancel = {
                                         showContent = false
-                                        // taskNote is no longer cleared on cancel to preserve notes until save
                                     }
                                 )
                             }
                         }
                     }
-                    // Lista de tareas con scroll y padding inferior para no tapar los botones flotantes
+
                     Box(
                         Modifier
                             .fillMaxSize()
@@ -122,84 +175,111 @@ fun App() {
                         Column(
                             modifier = Modifier
                                 .fillMaxSize()
+                                .padding(16.dp)
                         ) {
-                        }
-                        if (tasks.isNotEmpty()) {
-                            val scrollState = rememberScrollState()
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .verticalScroll(scrollState)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(Strings.get("task.added"), style = M3Theme.typography.titleLarge, color = M3Theme.colorScheme.primary)
-                                Spacer(Modifier.height(8.dp))
-                                tasks.forEachIndexed { index, task ->
-                                    TaskCard(
-                                        task = task,
-                                        onTaskUpdate = { updatedTask ->
-                                            val updatedTasks = tasks.toMutableList()
-                                            updatedTasks[index] = updatedTask
-                                            tasks = updatedTasks
-                                        },
-                                        onNoteAdd = { noteText ->
-                                            val updatedTasks = tasks.toMutableList()
-                                            val updatedNotes = updatedTasks[index].notes.toMutableList()
-                                            updatedNotes.add(objects.notes.Note(noteText))
-                                            updatedTasks[index] = updatedTasks[index].copy(notes = updatedNotes)
-                                            tasks = updatedTasks
-                                        },
-                                        onNoteEdit = { noteIndex, newText ->
-                                            val updatedTasks = tasks.toMutableList()
-                                            val updatedNotes = updatedTasks[index].notes.toMutableList()
-                                            updatedNotes[noteIndex] = updatedNotes[noteIndex].copy(text = newText)
-                                            updatedTasks[index] = updatedTasks[index].copy(notes = updatedNotes)
-                                            tasks = updatedTasks
-                                        },
-                                        onNoteDelete = { noteIndex ->
-                                            val updatedTasks = tasks.toMutableList()
-                                            val updatedNotes = updatedTasks[index].notes.toMutableList()
-                                            updatedNotes.removeAt(noteIndex)
-                                            updatedTasks[index] = updatedTasks[index].copy(notes = updatedNotes)
-                                            tasks = updatedTasks
-                                        },
-                                        estimatedTime = task.estimatedTime,
-                                        onEstimatedTimeChange = { newTime ->
-                                            val updatedTasks = tasks.toMutableList()
-                                            updatedTasks[index] = updatedTasks[index].copy(estimatedTime = newTime)
-                                            tasks = updatedTasks
-                                        },
-                                        onDeleteTask = {
-                                            val updatedTasks = tasks.toMutableList()
-                                            updatedTasks.removeAt(index)
-                                            tasks = updatedTasks
-                                        }
+                                Text(
+                                    Strings.get("task.added"),
+                                    style = M3Theme.typography.headlineMedium,
+                                    color = M3Theme.colorScheme.primary
+                                )
+                                IconButton(onClick = { toggleTheme() }) {
+                                    Icon(
+                                        imageVector = Icons.Default.KeyboardArrowUp,
+                                        contentDescription = if (isDarkTheme) "Cambiar a tema claro" else "Cambiar a tema oscuro",
+                                        tint = M3Theme.colorScheme.primary
                                     )
                                 }
                             }
-                        } else {
-                            Box(
-                                Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(Strings.get("task.empty_motivation"), style = M3Theme.typography.titleMedium, color = M3Theme.colorScheme.primary)
+                            Spacer(Modifier.height(16.dp))
+                            if (tasks.isNotEmpty()) {
+                                val scrollState = rememberScrollState()
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .verticalScroll(scrollState)
+                                ) {
+                                    tasks.forEachIndexed { index, task ->
+                                        TaskCard(
+                                            task = task,
+                                            onTaskUpdate = { updatedTask ->
+                                                val updatedTasks = tasks.toMutableList()
+                                                updatedTasks[index] = updatedTask
+                                                tasks = updatedTasks
+                                            },
+                                            onNoteAdd = { noteText ->
+                                                val updatedTasks = tasks.toMutableList()
+                                                val updatedNotes = updatedTasks[index].notes.toMutableList()
+                                                updatedNotes.add(Note(noteText))
+                                                updatedTasks[index] = updatedTasks[index].copy(notes = updatedNotes)
+                                                tasks = updatedTasks
+                                            },
+                                            onNoteDelete = { noteIndex ->
+                                                val updatedTasks = tasks.toMutableList()
+                                                val updatedNotes = updatedTasks[index].notes.toMutableList()
+                                                updatedNotes.removeAt(noteIndex)
+                                                updatedTasks[index] = updatedTasks[index].copy(notes = updatedNotes)
+                                                tasks = updatedTasks
+                                            },
+                                            estimatedTime = task.estimatedTime,
+                                            onEstimatedTimeChange = { newTime ->
+                                                val updatedTasks = tasks.toMutableList()
+                                                updatedTasks[index] = updatedTasks[index].copy(estimatedTime = newTime)
+                                                tasks = updatedTasks
+                                            },
+                                            onDeleteTask = {
+                                                val updatedTasks = tasks.toMutableList()
+                                                updatedTasks.removeAt(index)
+                                                tasks = updatedTasks
+                                            }
+                                        )
+                                    }
+                                }
+                            } else {
+                                Box(
+                                    Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        Strings.get("task.empty_motivation"),
+                                        style = M3Theme.typography.headlineSmall,
+                                        color = M3Theme.colorScheme.primary
+                                    )
+                                }
                             }
                         }
                     }
-                    // Botón flotante para minimizar (abajo a la derecha)
+
                     FloatingActionButton(
                         onClick = { maximized = false },
-                        modifier = Modifier.align(Alignment.BottomEnd).padding(24.dp),
-                        containerColor = M3Theme.colorScheme.primaryContainer
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(24.dp),
+                        containerColor = M3Theme.colorScheme.primaryContainer,
+                        contentColor = M3Theme.colorScheme.onPrimaryContainer
                     ) {
-                        Icon(Icons.Default.KeyboardArrowDown, contentDescription = Strings.get("button.minimize"), tint = M3Theme.colorScheme.onPrimaryContainer)
+                        Icon(
+                            Icons.Default.KeyboardArrowDown,
+                            contentDescription = Strings.get("button.minimize")
+                        )
                     }
-                    // Botón flotante para agregar tarea (abajo a la derecha, encima del de minimizar)
+
                     FloatingActionButton(
                         onClick = { showContent = !showContent },
-                        modifier = Modifier.align(Alignment.BottomEnd).padding(end = 24.dp, bottom = 88.dp),
-                        containerColor = M3Theme.colorScheme.secondaryContainer
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(end = 24.dp, bottom = 88.dp),
+                        containerColor = M3Theme.colorScheme.secondaryContainer,
+                        contentColor = M3Theme.colorScheme.onSecondaryContainer
                     ) {
-                        Icon(Icons.Default.Add, contentDescription = Strings.get("button.add"), tint = M3Theme.colorScheme.onSecondaryContainer)
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = Strings.get("button.add")
+                        )
                     }
                 }
             } else {

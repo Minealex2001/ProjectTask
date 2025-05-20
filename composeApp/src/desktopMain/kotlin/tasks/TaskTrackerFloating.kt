@@ -10,6 +10,8 @@ import androidx.compose.ui.input.pointer.pointerMoveFilter
 import androidx.compose.ui.unit.dp
 import objects.tasks.Task
 import org.queststudios.projecttask.localization.Strings
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 
 @OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
 @Composable
@@ -19,7 +21,7 @@ fun TaskTrackerFloating(
 ) {
     Surface(
         tonalElevation = 8.dp,
-        shape = M3Theme.shapes.medium,
+        shape = M3Theme.shapes.large,
         color = M3Theme.colorScheme.surface,
         modifier = Modifier
             .widthIn(min = 340.dp, max = 600.dp)
@@ -30,78 +32,129 @@ fun TaskTrackerFloating(
                 modifier = Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.Start
             ) {
-                Text(Strings.get("task.active"), style = M3Theme.typography.titleLarge, color = M3Theme.colorScheme.primary)
-                Spacer(Modifier.height(8.dp))
+                Text(
+                    Strings.get("task.active"),
+                    style = M3Theme.typography.headlineMedium,
+                    color = M3Theme.colorScheme.primary
+                )
+                Spacer(Modifier.height(16.dp))
                 if (tasks.isEmpty()) {
-                    Text(Strings.get("task.no_pending"), style = M3Theme.typography.bodyLarge, color = M3Theme.colorScheme.onSurface)
+                    Text(
+                        Strings.get("task.no_pending"),
+                        style = M3Theme.typography.bodyLarge,
+                        color = M3Theme.colorScheme.onSurfaceVariant
+                    )
                 } else {
                     val pendingTasks = tasks.filter { !it.isCompleted }
                     val nextTask = pendingTasks
                         .filter { !it.estimatedTime.isNullOrBlank() }
                         .minByOrNull { it.estimatedTime ?: "99:99:99" }
                     var showDetails by remember { mutableStateOf(false) }
+
                     if (nextTask != null) {
-                        Text(Strings.get("task.next"), style = M3Theme.typography.titleMedium, color = M3Theme.colorScheme.secondary)
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .pointerMoveFilter(
-                                    onEnter = {
-                                        showDetails = true
-                                        false
-                                    },
-                                    onExit = {
-                                        showDetails = false
-                                        false
-                                    }
-                                )
-                                .let { baseModifier ->
-                                    // Ajuste automático de ancho si el nombre o detalles son largos
-                                    if (showDetails && (nextTask.description.isNotBlank() || nextTask.notes.isNotEmpty())) {
-                                        baseModifier.widthIn(min = 340.dp, max = 600.dp)
-                                    } else {
-                                        baseModifier
-                                    }
-                                }
+                        ElevatedCard(
+                            shape = M3Theme.shapes.medium,
+                            colors = CardDefaults.elevatedCardColors(
+                                containerColor = M3Theme.colorScheme.primaryContainer
+                            ),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
-                            Box {
-                                Text(nextTask.name, style = M3Theme.typography.bodyLarge, color = M3Theme.colorScheme.onSurface)
-                                if (showDetails) {
-                                    Surface(
-                                        tonalElevation = 8.dp,
-                                        shape = M3Theme.shapes.small,
-                                        color = M3Theme.colorScheme.surfaceVariant,
-                                        modifier = Modifier
-                                            .padding(top = 28.dp, start = 0.dp)
-                                            .widthIn(min = 220.dp, max = 400.dp)
-                                    ) {
-                                        Column(modifier = Modifier.padding(12.dp)) {
-                                            if (nextTask.description.isNotBlank()) {
-                                                Text(nextTask.description, style = M3Theme.typography.bodyMedium)
-                                            }
-                                            if (nextTask.notes.isNotEmpty()) {
-                                                Spacer(Modifier.height(4.dp))
-                                                Text(Strings.get("task.notes"), style = M3Theme.typography.labelLarge)
-                                                nextTask.notes.forEach { note ->
-                                                    Text("- ${note.text}", style = M3Theme.typography.bodySmall, modifier = Modifier.padding(start = 8.dp))
+                            Column(
+                                modifier = Modifier.padding(16.dp)
+                            ) {
+                                Text(
+                                    Strings.get("task.next"),
+                                    style = M3Theme.typography.labelLarge,
+                                    color = M3Theme.colorScheme.onPrimaryContainer
+                                )
+                                Spacer(Modifier.height(8.dp))
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Box {
+                                        Text(
+                                            nextTask.name,
+                                            style = M3Theme.typography.titleMedium,
+                                            color = M3Theme.colorScheme.onPrimaryContainer
+                                        )
+                                        if (showDetails) {
+                                            Surface(
+                                                tonalElevation = 8.dp,
+                                                shape = M3Theme.shapes.medium,
+                                                color = M3Theme.colorScheme.surface,
+                                                modifier = Modifier
+                                                    .padding(top = 28.dp, start = 0.dp)
+                                                    .widthIn(min = 220.dp, max = 400.dp)
+                                            ) {
+                                                Column(modifier = Modifier.padding(16.dp)) {
+                                                    if (nextTask.description.isNotBlank()) {
+                                                        Text(
+                                                            nextTask.description,
+                                                            style = M3Theme.typography.bodyMedium,
+                                                            color = M3Theme.colorScheme.onSurface
+                                                        )
+                                                    }
+                                                    if (nextTask.notes.isNotEmpty()) {
+                                                        Spacer(Modifier.height(8.dp))
+                                                        Text(
+                                                            Strings.get("task.notes"),
+                                                            style = M3Theme.typography.labelLarge,
+                                                            color = M3Theme.colorScheme.primary
+                                                        )
+                                                        nextTask.notes.forEach { note ->
+                                                            Text(
+                                                                "• ${note.text}",
+                                                                style = M3Theme.typography.bodySmall,
+                                                                color = M3Theme.colorScheme.onSurfaceVariant,
+                                                                modifier = Modifier.padding(start = 8.dp)
+                                                            )
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
                                     }
+                                    Spacer(Modifier.width(8.dp))
                                 }
+                                Text(
+                                    Strings.get("task.estimated_time", nextTask.estimatedTime),
+                                    style = M3Theme.typography.bodyMedium,
+                                    color = M3Theme.colorScheme.onPrimaryContainer
+                                )
                             }
-                            Spacer(Modifier.width(8.dp))
                         }
-                        Text(Strings.get("task.estimated_time", nextTask.estimatedTime), style = M3Theme.typography.bodyMedium, color = M3Theme.colorScheme.secondary)
                     } else {
-                        Text(Strings.get("task.no_estimated"), style = M3Theme.typography.bodyMedium, color = M3Theme.colorScheme.outline)
+                        Text(
+                            Strings.get("task.no_estimated"),
+                            style = M3Theme.typography.bodyMedium,
+                            color = M3Theme.colorScheme.outline
+                        )
                     }
-                    Spacer(Modifier.height(12.dp))
-                    Text(Strings.get("task.total_pending", pendingTasks.size), style = M3Theme.typography.bodyLarge, color = M3Theme.colorScheme.primary)
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        Strings.get("task.total_pending", pendingTasks.size),
+                        style = M3Theme.typography.titleMedium,
+                        color = M3Theme.colorScheme.primary
+                    )
                 }
-                Spacer(Modifier.height(12.dp))
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    ElevatedButton(onClick = onMaximize) {
+                Spacer(Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    FilledTonalButton(
+                        onClick = onMaximize,
+                        colors = ButtonDefaults.filledTonalButtonColors(
+                            containerColor = M3Theme.colorScheme.secondaryContainer,
+                            contentColor = M3Theme.colorScheme.onSecondaryContainer
+                        )
+                    ) {
+                        Icon(
+                            Icons.Default.KeyboardArrowUp,
+                            contentDescription = Strings.get("button.maximize")
+                        )
+                        Spacer(Modifier.width(8.dp))
                         Text(Strings.get("button.maximize"))
                     }
                 }

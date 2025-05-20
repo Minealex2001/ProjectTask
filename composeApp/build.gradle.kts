@@ -34,15 +34,25 @@ kotlin {
     }
 }
 
-
 compose.desktop {
     application {
         mainClass = "org.queststudios.projecttask.MainKt"
-
         nativeDistributions {
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "org.queststudios.projecttask"
+            targetFormats(TargetFormat.Exe, TargetFormat.Msi, TargetFormat.Deb, TargetFormat.Dmg)
+            packageName = "Project Task"
             packageVersion = "1.0.0"
+            windows {
+                menuGroup = "ProjectTask"
+                dirChooser = true
+                shortcut = true
+                iconFile.set(project.file("src/desktopMain/resources/icon.png"))
+            }
+            macOS {
+                iconFile.set(project.file("src/desktopMain/resources/icon.png"))
+            }
+            linux {
+                iconFile.set(project.file("src/desktopMain/resources/icon.png"))
+            }
         }
     }
 }

@@ -1,14 +1,15 @@
 package org.queststudios.projecttask
 
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
-import androidx.compose.ui.unit.dp
-import java.io.File
+import app.App
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.queststudios.projecttask.localization.Strings
+import java.io.File
 
 //NO TOCAR
 fun getLanguageFromArgsOrConfig(args: Array<String>): String {

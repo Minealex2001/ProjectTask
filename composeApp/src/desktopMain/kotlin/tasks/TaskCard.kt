@@ -1,20 +1,46 @@
-package org.queststudios.projecttask
+package tasks
 
-import androidx.compose.animation.*
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.material3.MaterialTheme as M3Theme
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberTimePickerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import org.queststudios.projecttask.localization.Strings
-import objects.tasks.Task
-import objects.notes.Note
 import androidx.compose.ui.window.Dialog
+import objects.tasks.Task
+import org.queststudios.projecttask.localization.Strings
+import androidx.compose.material3.MaterialTheme as M3Theme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,6 +84,7 @@ fun TaskCard(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
+            // Título
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -77,11 +104,7 @@ fun TaskCard(
                         value = editedName,
                         onValueChange = { editedName = it },
                         label = { Text(Strings.get("task.name")) },
-                        modifier = Modifier.weight(1f),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            focusedBorderColor = M3Theme.colorScheme.primary,
-                            unfocusedBorderColor = M3Theme.colorScheme.outline
-                        )
+                        modifier = Modifier.weight(1f)
                     )
                 }
                 Row {
@@ -132,32 +155,43 @@ fun TaskCard(
 
             Spacer(Modifier.height(8.dp))
 
-            if (!isEditing) {
-                if (task.description.isNotBlank()) {
-                    Text(
-                        text = task.description,
-                        style = M3Theme.typography.bodyMedium,
-                        color = M3Theme.colorScheme.onSurfaceVariant,
-                        maxLines = 3,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Spacer(Modifier.height(8.dp))
-                }
-            } else {
+            // Descripción
+            if (!isEditing && task.description.isNotBlank()) {
+                Text(
+                    text = task.description,
+                    style = M3Theme.typography.bodyMedium,
+                    color = M3Theme.colorScheme.onSurfaceVariant,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(Modifier.height(8.dp))
+            } else if (isEditing) {
                 OutlinedTextField(
                     value = editedDescription,
                     onValueChange = { editedDescription = it },
                     label = { Text(Strings.get("task.description")) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = M3Theme.colorScheme.primary,
-                        unfocusedBorderColor = M3Theme.colorScheme.outline
-                    )
+                    modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(8.dp))
             }
 
-            if (task.notes.isNotEmpty()) {
+            // Notas
+            if (!isEditing && task.notes.isNotEmpty()) {
+                Text(
+                    text = Strings.get("task.notes"),
+                    style = M3Theme.typography.labelLarge,
+                    color = M3Theme.colorScheme.primary,
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+                task.notes.forEach { note ->
+                    Text(
+                        text = "• ${note.text}",
+                        style = M3Theme.typography.bodySmall,
+                        color = M3Theme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Spacer(Modifier.height(8.dp))
+            } else if (isEditing && task.notes.isNotEmpty()) {
                 Text(
                     text = Strings.get("task.notes"),
                     style = M3Theme.typography.labelLarge,
@@ -175,78 +209,28 @@ fun TaskCard(
                             color = M3Theme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.weight(1f)
                         )
-                        if (isEditing) {
-                            IconButton(
-                                onClick = { onNoteDelete(noteIndex) },
-                                modifier = Modifier.size(24.dp)
-                            ) {
-                                Icon(
-                                    Icons.Default.Delete,
-                                    contentDescription = Strings.get("button.delete"),
-                                    tint = M3Theme.colorScheme.error,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                            }
+                        IconButton(
+                            onClick = { onNoteDelete(noteIndex) },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Delete,
+                                contentDescription = Strings.get("button.delete_note"),
+                                tint = M3Theme.colorScheme.error
+                            )
                         }
                     }
                 }
                 Spacer(Modifier.height(8.dp))
             }
 
-            if (isEditing) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    OutlinedTextField(
-                        value = newNoteText,
-                        onValueChange = { newNoteText = it },
-                        label = { Text(Strings.get("task.new_note")) },
-                        modifier = Modifier.weight(1f),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            focusedBorderColor = M3Theme.colorScheme.primary,
-                            unfocusedBorderColor = M3Theme.colorScheme.outline
-                        )
-                    )
-                    IconButton(
-                        onClick = {
-                            if (newNoteText.isNotBlank()) {
-                                onNoteAdd(newNoteText)
-                                newNoteText = ""
-                            }
-                        }
-                    ) {
-                        Icon(
-                            Icons.Default.Add,
-                            contentDescription = Strings.get("button.add"),
-                            tint = M3Theme.colorScheme.primary
-                        )
-                    }
-                }
-                Spacer(Modifier.height(8.dp))
-            }
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                OutlinedTextField(
-                    value = editingTime,
-                    onValueChange = {},
-                    label = { Text(Strings.get("task.estimated_time")) },
-                    enabled = false,
-                    modifier = Modifier.weight(1f),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        disabledBorderColor = M3Theme.colorScheme.outline,
-                        disabledTextColor = M3Theme.colorScheme.onSurface
-                    )
+            // Tiempo estimado
+            if (task.estimatedTime != null && task.estimatedTime!!.isNotBlank()) {
+                Text(
+                    text = Strings.get("task.estimated_time") + ": " + task.estimatedTime,
+                    style = M3Theme.typography.bodySmall,
+                    color = M3Theme.colorScheme.secondary
                 )
-                Spacer(Modifier.width(8.dp))
-                FilledTonalButton(
-                    onClick = { showEditTimePicker = true }
-                ) {
-                    Text(Strings.get("button.select_time"))
-                }
             }
         }
     }
@@ -284,15 +268,42 @@ fun TaskCard(
                 color = M3Theme.colorScheme.surface,
                 tonalElevation = 8.dp
             ) {
-                TimePickerContent(
-                    initialTime = editingTime,
-                    onTimeSelected = { newTime ->
-                        editingTime = newTime
-                        onEstimatedTimeChange(newTime)
-                        showEditTimePicker = false
-                    },
-                    onDismiss = { showEditTimePicker = false }
+                // Material3 TimePicker
+                val parts = editingTime.split(":")
+                val initHour = parts.getOrNull(0)?.toIntOrNull() ?: 0
+                val initMinute = parts.getOrNull(1)?.toIntOrNull() ?: 0
+                val timePickerState = rememberTimePickerState(
+                    initialHour = initHour,
+                    initialMinute = initMinute
                 )
+                Column(
+                    modifier = Modifier.padding(24.dp)
+                ) {
+                    TimePicker(
+                        state = timePickerState
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    Row(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        OutlinedButton(onClick = { showEditTimePicker = false }) {
+                            Text(Strings.get("button.cancel"))
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        ElevatedButton(onClick = {
+                            val selectedHour = timePickerState.hour
+                            val selectedMinute = timePickerState.minute
+                            val formatted =
+                                String.format("%02d:%02d:00", selectedHour, selectedMinute)
+                            editingTime = formatted
+                            onEstimatedTimeChange(formatted)
+                            showEditTimePicker = false
+                        }) {
+                            Text(Strings.get("button.save"))
+                        }
+                    }
+                }
             }
         }
     }

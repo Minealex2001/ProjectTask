@@ -1,62 +1,56 @@
-package org.queststudios.projecttask
+package app
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.foundation.background
-import androidx.compose.ui.unit.dp
-import objects.tasks.Task
-import objects.notes.Note
-import org.jetbrains.compose.ui.tooling.preview.Preview
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
-import java.io.File
-import java.nio.file.Paths
-import java.util.Base64
-import javax.crypto.Cipher
-import javax.crypto.spec.SecretKeySpec
-import kotlinx.serialization.builtins.ListSerializer
-import androidx.compose.material3.*
-import androidx.compose.material3.MaterialTheme as M3Theme
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.WindowPlacement
-import androidx.compose.ui.window.application
-import androidx.compose.ui.window.rememberWindowState
-import org.queststudios.projecttask.TaskTrackerFloating
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.desktop.ui.tooling.preview.Preview
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.FloatingActionButton
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import org.queststudios.projecttask.localization.Strings
-import org.queststudios.projecttask.storage.saveTasksEncrypted
-import org.queststudios.projecttask.storage.loadTasksEncrypted
-import org.queststudios.projecttask.AddTaskScreen
-import org.queststudios.projecttask.addTask
-import org.queststudios.projecttask.TaskCard
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Shapes
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Typography
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import org.queststudios.projecttask.ui.CustomDarkColorScheme
-import org.queststudios.projecttask.ui.CustomLightColorScheme
-import java.nio.file.Files
-import java.nio.file.StandardOpenOption
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.put
+import objects.notes.Note
+import org.queststudios.projecttask.AddTaskScreen
+import org.queststudios.projecttask.TaskTrackerFloating
+import org.queststudios.projecttask.addTask
+import org.queststudios.projecttask.localization.Strings
+import org.queststudios.projecttask.storage.loadTasksEncrypted
+import org.queststudios.projecttask.storage.saveTasksEncrypted
+import org.queststudios.projecttask.ui.CustomDarkColorScheme
+import org.queststudios.projecttask.ui.CustomLightColorScheme
+import tasks.TaskCard
+import java.io.File
+import androidx.compose.material3.MaterialTheme as M3Theme
 
 fun getThemeFromSettings(): Boolean {
     val configFile = File(System.getProperty("user.home"), "Documents/ProjectTask/settings.json")
@@ -73,7 +67,7 @@ fun getThemeFromSettings(): Boolean {
 
 fun saveThemeToSettings(isDark: Boolean) {
     val configFile = File(System.getProperty("user.home"), "Documents/ProjectTask/settings.json")
-    val json: kotlinx.serialization.json.JsonObject = if (configFile.exists()) {
+    val json: JsonObject = if (configFile.exists()) {
         try {
             Json.parseToJsonElement(configFile.readText()).jsonObject
         } catch (_: Exception) {
@@ -85,7 +79,7 @@ fun saveThemeToSettings(isDark: Boolean) {
         put("theme", if (isDark) "dark" else "light")
     }
     configFile.parentFile?.mkdirs()
-    configFile.writeText(Json.encodeToString(kotlinx.serialization.json.JsonObject.serializer(), updated))
+    configFile.writeText(Json.encodeToString(JsonObject.serializer(), updated))
 }
 
 @Composable
@@ -146,7 +140,7 @@ fun App() {
                                             tasks,
                                             taskName,
                                             taskDescription,
-                                            if (taskTime.isNotBlank()) taskTime else null,
+                                            taskTime.ifBlank { null },
                                             taskNote
                                         )
                                         if (updated.size > tasks.size) {
@@ -294,64 +288,3 @@ fun App() {
     }
 }
 
-@Composable
-fun TimePickerContent(
-    initialTime: String = "00:00:00",
-    onTimeSelected: (String) -> Unit,
-    onDismiss: () -> Unit
-) {
-    var hour by remember { mutableStateOf(initialTime.split(":").getOrNull(0)?.toIntOrNull() ?: 0) }
-    var minute by remember { mutableStateOf(initialTime.split(":").getOrNull(1)?.toIntOrNull() ?: 0) }
-    var second by remember { mutableStateOf(initialTime.split(":").getOrNull(2)?.toIntOrNull() ?: 0) }
-    Column(Modifier.padding(16.dp)) {
-        Text(Strings.get("timepicker.title"), style = androidx.compose.material3.MaterialTheme.typography.titleMedium)
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            DropdownSelector(
-                label = Strings.get("timepicker.hour"),
-                value = hour,
-                range = 0..23,
-                onValueChange = { hour = it }
-            )
-            Spacer(Modifier.width(8.dp))
-            DropdownSelector(
-                label = Strings.get("timepicker.minute"),
-                value = minute,
-                range = 0..59,
-                onValueChange = { minute = it }
-            )
-            Spacer(Modifier.width(8.dp))
-            DropdownSelector(
-                label = Strings.get("timepicker.second"),
-                value = second,
-                range = 0..59,
-                onValueChange = { second = it }
-            )
-        }
-        Row(Modifier.padding(top = 16.dp)) {
-            ElevatedButton(onClick = {
-                val timeStr = String.format("%02d:%02d:%02d", hour, minute, second)
-                onTimeSelected(timeStr)
-            }) { Text(Strings.get("button.save")) }
-            Spacer(Modifier.width(8.dp))
-            OutlinedButton(onClick = onDismiss) { Text(Strings.get("button.cancel")) }
-        }
-    }
-}
-
-@Composable
-fun DropdownSelector(label: String, value: Int, range: IntRange, onValueChange: (Int) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
-    Box {
-        OutlinedButton(onClick = { expanded = true }) {
-            Text("$label: $value")
-        }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            range.forEach {
-                DropdownMenuItem(onClick = {
-                    onValueChange(it)
-                    expanded = false
-                }, text = { Text(it.toString()) })
-            }
-        }
-    }
-}

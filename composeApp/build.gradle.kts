@@ -10,26 +10,18 @@ plugins {
 
 kotlin {
     jvm("desktop")
-    
+
     sourceSets {
-        val desktopMain by getting
-        
-        commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material)
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
-            implementation(libs.androidx.lifecycle.viewmodel)
-            implementation(libs.androidx.lifecycle.runtime.compose)
-            implementation("io.github.oshai:kotlin-logging-jvm:7.0.7")
-            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-            implementation("org.jetbrains.compose.material3:material3:1.6.0")
-        }
-        desktopMain.dependencies {
-            implementation(compose.desktop.currentOs)
-            implementation(libs.kotlinx.coroutines.swing)
+        val desktopMain by getting {
+            dependencies {
+                implementation(compose.desktop.currentOs)
+                implementation(compose.material3) // This pulls in org.jetbrains.compose.material3:material3
+                implementation(compose.components.resources)
+                implementation(compose.desktop.currentOs) // This brings in necessary UI components
+                implementation(compose.uiTooling)
+                implementation("io.github.oshai:kotlin-logging-jvm:5.1.0") // Example version
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0") // Example version
+            }
         }
     }
 }

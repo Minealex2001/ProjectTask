@@ -1,5 +1,6 @@
 package org.queststudios.projecttask
 
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
@@ -35,8 +36,8 @@ fun main(args: Array<String>) = application {
     val lang = getLanguageFromArgsOrConfig(args)
     Strings.load(lang)
     val windowState = rememberWindowState(
-        width = 340.dp,
-        height = 180.dp,
+        width = 900.dp, // ancho inicial más grande
+        height = 700.dp, // alto inicial más grande
         placement = androidx.compose.ui.window.WindowPlacement.Floating
     )
     Window(
